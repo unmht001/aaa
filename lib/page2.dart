@@ -8,6 +8,8 @@ class Page2 extends StatelessWidget {
       theme: new ThemeData(
         primarySwatch: Colors.blue,
       ),
+      //333
+
       debugShowCheckedModeBanner: false,
       home: new Scaffold(
         backgroundColor: Colors.yellowAccent,
