@@ -14,7 +14,8 @@ class _Page3State extends State<Page3> {
     return Container(
         color: Colors.greenAccent,
         alignment: Alignment.center,
-        child: Container(width: 400, height: 400, color: Colors.black, child: cellBuild(this.widget.sdkdata)));
+        // child: Container(width: 400, height: 400, color: Colors.black, child: cellBuild(this.widget.sdkdata)));
+        child: cellBuild(this.widget.sdkdata));
   }
 }
 
@@ -29,17 +30,44 @@ Widget cellBuild(List v) {
     "minicellbackground": Colors.white,
     "minicellfontcolor": Colors.black,
     "cellbackgroundcolor": Colors.brown,
-    "gridbackgroundcolor": Colors.red
+    "gridbackgroundcolor": Colors.red,
+    "containergroundcolor": Colors.black,
+    
   };
+  // var minicelltextspace=0.0;
+  var minicelltextfontsize=9.0;
+  var minicellspace=1.0;  
+  var minicellpadding=minicellspace/2;
+  var minicellsize=minicellpadding*2+minicelltextfontsize;
+  var valuefontsize=minicellpadding*2+minicellsize*3;
+
+  var cellspace=1.0;
+  var cellpadding=cellspace/2;
+  var cellsize=cellpadding*4+minicellsize*3;
+
+  var gridspace=1.0;  
+  var gridpadding=gridspace/2;  
+  var gridsize=gridpadding*4+cellsize*3;
+  
+  var containerpadding=gridspace;
+  var containersize=gridspace*4+gridsize*3;    
+  
+  
+
+
+  
+  
+  
+
 
   var _f1 = (int v1) {
     return Container(
-        width: 13,
-        height: 13,
+        width: minicellsize,
+        height: minicellsize,
         alignment: Alignment.center,
-        padding: EdgeInsets.all(1),
+        padding: EdgeInsets.all(minicellpadding),
         color: thema["minicellbackground"],
-        child: Text(v1.toString(), style: TextStyle(color: thema["minicellfontcolor"], fontSize: 10.0)));
+        child: Text(v1.toString(), style: TextStyle(color: thema["minicellfontcolor"], fontSize: minicelltextfontsize)));
   };
 
   var _f2 = (List v2) {
@@ -47,9 +75,9 @@ Widget cellBuild(List v) {
 
     if (v2[2] == false) {
       return Container(
-          width: 41,
-          height: 41,
-          padding: EdgeInsets.all(0),
+          width: cellsize,
+          height: cellsize,
+          padding: EdgeInsets.all(cellpadding),
           color: thema["cellbackgroundcolor"],
           alignment: Alignment.center,
           child: Column(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: <Widget>[
@@ -65,20 +93,20 @@ Widget cellBuild(List v) {
           ]));
     } else {
       return Container(
-          width: 41,
-          height: 41,
-          padding: EdgeInsets.all(1),
+          width: cellsize,
+          height: cellsize,
+          padding: EdgeInsets.all(cellpadding),
           color: thema["cellbackgroundcolor"],
           alignment: Alignment.center,
-          child: Text(v2[1] == 0 ? "" : v2[1].toString(), style: TextStyle(fontSize: 36)));
+          child: Text(v2[1] == 0 ? "" : v2[1].toString(), style: TextStyle(fontSize: valuefontsize)));
     }
   };
 
   var _f3 = (List v3, int gridindex) {
     return Container(
-        width: 127,
-        height: 127,
-        padding: EdgeInsets.all(1),
+        width: gridsize,
+        height: gridsize,
+        padding: EdgeInsets.all(gridpadding),
         color: thema["gridbackgroundcolor"],
         child: Column(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: <Widget>[
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: <Widget>[
@@ -100,7 +128,11 @@ Widget cellBuild(List v) {
   };
 
   return Container(
-      padding: EdgeInsets.all(5),
+    color: thema["containergroundcolor"],
+    width: containersize,
+    height:containersize,
+    alignment: Alignment.center,
+      padding: EdgeInsets.all(containerpadding),
       child: Column(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: <Widget>[
     Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: <Widget>[_f3(v, 0), _f3(v, 1), _f3(v, 2)]),
     Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: <Widget>[_f3(v, 3), _f3(v, 4), _f3(v, 5)]),
