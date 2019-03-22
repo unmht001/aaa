@@ -93,6 +93,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.99"
+  sliver_glue:
+    dependency: "direct main"
+    description:
+      name: sliver_glue
+      url: "https://dart-pub.mirrors.sjtug.sjtu.edu.cn/"
+    source: hosted
+    version: "1.1.0"
   source_span:
     dependency: transitive
     description:
