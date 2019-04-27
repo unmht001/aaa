@@ -4,17 +4,62 @@ import 'package:flutter/material.dart';
 final List<String> thistext = <String>['1', '2', "3", '1', '2', "3", '1', '2', "3"];
 
 class Sdkcell {
-  List valuebox = [1, 2, 3, 4, 5, 6, "", 8, 9];
-  int value = 0;
-  bool showvalue = false;
+  List valuebox = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  int value;
+  bool showvalue;
   int position;
 
   int get sline => position ~/ 9;
   int get srow => position % 9;
   int get sgrid => (position ~/ 27) * 3 + (position % 9) ~/ 3;
   int get sgindex => ((position ~/ 9) % 3) * 3 + position % 3;
+  bool get geterr => valuebox == null || valuebox.length == 0;
 
-  Sdkcell(this.position) : assert(position != null && position > -1 && position < 81);
+  void seterr() {
+    valuebox = null;
+    value = 0;
+  }
+
+  bool setvalue(int v) {
+    if (value == null || value != 0 || valuebox.indexOf(v) == -1 || 1 >= v || v >= 9) {
+      return false;
+    } else {
+      valuebox = [v];
+      value = v;
+      return true;
+    }
+  }
+
+  clearcell() {
+    valuebox = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    value = 0;
+    showvalue = false;
+  }
+
+  bool killposible(int pv) {
+    if (!geterr || value != 0 || valuebox.indexOf(pv) == -1) {
+      return false;
+    } else {
+      valuebox.remove(pv);
+      if (valuebox.length == 1) {
+        value = valuebox[0];
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
+
+  bool checkcell() {
+    return !geterr && (value == 0 || (value >= 1 && value <= 9 && valuebox[0] == value));
+  }
+
+  Sdkcell(this.position, [int vl = 0]) : assert(position != null && position > -1 && position < 81) {
+    clearcell();
+    if (vl != 0) {
+      setvalue(vl);
+    }
+  }
 }
 
 class Sdkmain {
@@ -100,9 +145,20 @@ class Sdkmain {
 class SdkGrid extends StatefulWidget {
   final List data = [[], [], []];
   final Sdkmain smin = new Sdkmain();
+  final colors = {
+    "c1": Colors.white,
+    "c2": Colors.pink[200],
+    "c3": Colors.yellow[900],
+    "c4": Colors.yellow[300],
+    "c5": Colors.grey[100],
+    "c6": Colors.orange,
+    'c7': Colors.green,
+    'c8': Colors.grey
+  };
   SdkGrid() {
     for (var i = 0; i < 81; i++) {}
   }
+
   @override
   _SdkGridState createState() => _SdkGridState();
 }
@@ -110,22 +166,22 @@ class SdkGrid extends StatefulWidget {
 class _SdkGridState extends State<SdkGrid> {
   final List msg = [
     "show someting",
-    [-1, -1],
-
+    [-1, -1], //坐标信息
+    1, //上次选中的数字
   ];
 
-  Color getcl(x,y){
-    if (msg[1][0]<0 || msg[1][1]<0){
-      return Colors.yellow[200];
-    }else if (msg[1][0]==x && msg[1][1]==y) {
-      return Colors.yellow[400];
-    }else if ((msg[1][0] % 3==x%3 && msg[1][1]%3==y%3) ||(msg[1][0] ~/ 3==x~/3 && msg[1][1]~/3==y~/3)) {
-      return Colors.yellow[300];
-    }else if(msg[1][0]==x){
-      return Colors.yellow[600];
-
-    }else{
-      return Colors.yellow[200];
+  Color getcl(x, y) {
+    if (msg[1][0] < 0 || msg[1][1] < 0) {
+      return this.widget.colors["c1"]; //初始化颜色
+    } else if (msg[1][0] == x && msg[1][1] == y) {
+      return this.widget.colors["c2"]; //
+    } else if ((msg[1][0] % 3 == x % 3 && msg[1][1] % 3 == y % 3) ||
+        (msg[1][0] ~/ 3 == x ~/ 3 && msg[1][1] ~/ 3 == y ~/ 3)) {
+      return this.widget.colors["c3"];
+    } else if (msg[1][0] == x) {
+      return this.widget.colors["c4"];
+    } else {
+      return this.widget.colors["c5"]; //点了以后回复的颜色
     }
   }
 
@@ -133,13 +189,15 @@ class _SdkGridState extends State<SdkGrid> {
   Widget build(BuildContext context) {
     try {
       return Column(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: <Widget>[
+        Container(),
         Container(
             width: 400,
-            height: 430,
+            height: 400,
             child: Container(
                 color: Colors.tealAccent,
                 alignment: Alignment.center,
                 child: GridView.count(
+                    padding: EdgeInsets.zero,
                     crossAxisCount: 3,
                     mainAxisSpacing: 1.0,
                     crossAxisSpacing: 1.0,
@@ -149,11 +207,12 @@ class _SdkGridState extends State<SdkGrid> {
                           color: Colors.red,
                           padding: EdgeInsets.all(1),
                           child: GridView.count(
+                              padding: EdgeInsets.zero,
                               crossAxisCount: 3,
                               mainAxisSpacing: 1.0,
                               crossAxisSpacing: 1.0,
                               children: [0, 1, 2, 3, 4, 5, 6, 7, 8].map((y) {
-                                var _c1=getcl(x, y);
+                                var _c1 = getcl(x, y);
                                 return Container(
                                     alignment: Alignment.center,
                                     color: Colors.blue,
@@ -167,6 +226,7 @@ class _SdkGridState extends State<SdkGrid> {
                                         },
                                         // onTapDown: (dt){},
                                         child: GridView.count(
+                                            padding: EdgeInsets.zero,
                                             crossAxisCount: 3,
                                             mainAxisSpacing: 1.0,
                                             crossAxisSpacing: 1.0,
@@ -180,8 +240,29 @@ class _SdkGridState extends State<SdkGrid> {
                                             }).toList())));
                               }).toList()));
                     }).toList()))),
-        Container(child: FlatButton(child: Text("data"), onPressed: () {})),
-        Container(child: Text(msg[0]))
+        Container(
+            width: 400,
+            height: 40,
+            child: Row(children: <Widget>[
+              FlatButton(child: Text("填入"), onPressed: () {}),
+              FlatButton(child: Text("清除"), onPressed: () {}),
+              FlatButton(child: Text("锁定"), onPressed: () {}),
+              FlatButton(child: Text("试填"), onPressed: () {})
+            ])),
+        Container(
+            width: 396,
+            height: 44,
+            color: Colors.red,
+            child: GridView.count(
+              padding: EdgeInsets.zero,
+              crossAxisCount: 9,
+              shrinkWrap: true,
+              children: [1, 2, 3, 4, 5, 6, 7, 8, 9].map((z) {
+                return FlatButton(color: msg[2]==z?(this.widget.colors['c7']):this.widget.colors["c6"], child: Text(z.toString()), onPressed: () { setState(() {
+                  msg[2]=z;
+                }); });
+              }).toList(),
+            ))
       ]);
     } catch (e) {
       print("Tt1app:error \n ${e.toString()}");
