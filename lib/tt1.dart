@@ -8,6 +8,7 @@ class Sdkcell {
   int value;
   bool showvalue;
   int position;
+  bool locked=false;
 
   int get sline => position ~/ 9;
   int get srow => position % 9;
@@ -21,7 +22,7 @@ class Sdkcell {
   }
 
   bool setvalue(int v) {
-    if (value == null || value != 0 || valuebox.indexOf(v) == -1 || 1 >= v || v >= 9) {
+    if (value == null || value == 0 || valuebox.indexOf(v) == -1 || 1 >= v || v >= 9) {
       return false;
     } else {
       valuebox = [v];
@@ -41,12 +42,7 @@ class Sdkcell {
       return false;
     } else {
       valuebox.remove(pv);
-      if (valuebox.length == 1) {
-        value = valuebox[0];
-        return true;
-      } else {
-        return false;
-      }
+      return true;
     }
   }
 
@@ -63,8 +59,8 @@ class Sdkcell {
 }
 
 class Sdkmain {
-  List _sdkdt1 = [];
-
+  List<Sdkcell> _sdkdt1 = [];
+  List _his = [];
   List get data => _sdkdt1;
 
   int linerow2pos(int x, int y) => x * 9 + y;
@@ -73,6 +69,20 @@ class Sdkmain {
   List pos2linerow(int position) => [position ~/ 9, position % 9];
   List pos2gridindex(int position) =>
       [(position ~/ 27) * 3 + (position % 9) ~/ 3, ((position ~/ 9) % 3) * 3 + position % 3];
+  List<Sdkcell> pos2relevant(int position) {
+    var gc = pos2gridindex(position);
+    var ret = [];
+    var _r;
+    for (var i = 0; i < 9; i++) {
+      if (gc[1] != i) {
+        _r = gridindex2pos(gc[0], i);
+        if (ret.indexOf(_r) == -1) {
+          ret.add(_sdkdt1[_r]);
+        }
+      }
+    }
+    return ret;
+  }
 
   Sdkcell getbypos(int x) => _sdkdt1[x];
   Sdkcell getbylinerow(int x, int y) => _sdkdt1[linerow2pos(x, y)];
@@ -135,6 +145,38 @@ class Sdkmain {
     return _ret;
   }
 
+  savehis(List his) {
+    _his.add(his);
+  }
+
+  List gethis() {
+    return _his.removeLast();
+  }
+
+  cellsetvalue(pos, value) {
+    var _h = {
+      "value": [0, 0],
+      "killposible": [],
+      "setposble": []
+    };
+    var cell = _sdkdt1[pos];
+    if (cell.locked){
+      return;
+    }
+    assert(cell.setvalue(value), "position $pos set value $value error");
+    _h["value"] = [pos, value];
+    for (var item in pos2relevant(pos)) {
+      if (item.value == 0) {
+        if (item.killposible(value)) {
+          _h["killposible"].add([item.position, value]);
+        }
+      } else {
+        continue;
+      }
+    }
+    _his.add(_h);
+  }
+
   Sdkmain() {
     for (var i = 0; i < 81; i++) {
       _sdkdt1.add(Sdkcell(i));
@@ -194,6 +236,7 @@ class _SdkGridState extends State<SdkGrid> {
             width: 400,
             height: 400,
             child: Container(
+                //大格子
                 color: Colors.tealAccent,
                 alignment: Alignment.center,
                 child: GridView.count(
@@ -203,6 +246,7 @@ class _SdkGridState extends State<SdkGrid> {
                     crossAxisSpacing: 1.0,
                     children: [0, 1, 2, 3, 4, 5, 6, 7, 8].map((x) {
                       return Container(
+                          //中格子
                           alignment: Alignment.center,
                           color: Colors.red,
                           padding: EdgeInsets.all(1),
@@ -214,6 +258,7 @@ class _SdkGridState extends State<SdkGrid> {
                               children: [0, 1, 2, 3, 4, 5, 6, 7, 8].map((y) {
                                 var _c1 = getcl(x, y);
                                 return Container(
+                                    //小格子CELL
                                     alignment: Alignment.center,
                                     color: Colors.blue,
                                     padding: EdgeInsets.all(1),
@@ -225,28 +270,39 @@ class _SdkGridState extends State<SdkGrid> {
                                           });
                                         },
                                         // onTapDown: (dt){},
-                                        child: GridView.count(
-                                            padding: EdgeInsets.zero,
-                                            crossAxisCount: 3,
-                                            mainAxisSpacing: 1.0,
-                                            crossAxisSpacing: 1.0,
-                                            children: [0, 1, 2, 3, 4, 5, 6, 7, 8].map((z) {
-                                              return Container(
-                                                  alignment: Alignment.center,
-                                                  color: _c1,
-                                                  padding: EdgeInsets.all(1),
-                                                  child:
-                                                      Text((this.widget.smin.data[x * 9 + y].valuebox)[z].toString()));
-                                            }).toList())));
+                                        child: this.widget.smin.data[x * 9 + y].value == 0
+                                            ? GridView.count(
+                                                padding: EdgeInsets.zero,
+                                                crossAxisCount: 3,
+                                                mainAxisSpacing: 1.0,
+                                                crossAxisSpacing: 1.0,
+                                                children: [0, 1, 2, 3, 4, 5, 6, 7, 8].map((z) {
+                                                  return Container(
+                                                      alignment: Alignment.center,
+                                                      color: _c1,
+                                                      padding: EdgeInsets.all(1),
+                                                      child: Text(
+                                                          this.widget.smin.data[x * 9 + y].valuebox.indexOf(z+1) == -1
+                                                              ? " "
+                                                              : (z+1).toString()));
+                                                }).toList())
+                                            : Text(this.widget.smin.data[x * 9 + y].value.toString())));
                               }).toList()));
                     }).toList()))),
         Container(
             width: 400,
             height: 40,
             child: Row(children: <Widget>[
-              FlatButton(child: Text("填入"), onPressed: () {}),
+              FlatButton(child: Text("填入"), onPressed: () {
+                var _ppp=msg[1][0] *9+  msg[1][1] ;
+                if( msg[1][0] != -1 && msg[1][1] != -1){
+                  this.widget.smin.cellsetvalue(_ppp, msg[2]);
+                  setState(() {});
+                }
+
+              }),
               FlatButton(child: Text("清除"), onPressed: () {}),
-              FlatButton(child: Text("锁定"), onPressed: () {}),
+              FlatButton(child: Text("后退"), onPressed: () {}),
               FlatButton(child: Text("试填"), onPressed: () {})
             ])),
         Container(
@@ -258,9 +314,14 @@ class _SdkGridState extends State<SdkGrid> {
               crossAxisCount: 9,
               shrinkWrap: true,
               children: [1, 2, 3, 4, 5, 6, 7, 8, 9].map((z) {
-                return FlatButton(color: msg[2]==z?(this.widget.colors['c7']):this.widget.colors["c6"], child: Text(z.toString()), onPressed: () { setState(() {
-                  msg[2]=z;
-                }); });
+                return FlatButton(
+                    color: msg[2] == z ? (this.widget.colors['c7']) : this.widget.colors["c6"],
+                    child: Text(z.toString()),
+                    onPressed: () {
+                      setState(() {
+                        msg[2] = z;
+                      });
+                    });
               }).toList(),
             ))
       ]);
