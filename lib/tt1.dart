@@ -22,7 +22,8 @@ class Sdkcell {
   }
 
   bool setvalue(int v) {
-    if (value == null || value == 0 || valuebox.indexOf(v) == -1 || 1 >= v || v >= 9) {
+    print("${value == null} ${value != 0} ${valuebox.indexOf(v) == -1} ${1 >= v} ${ v >= 9}");
+    if (value == null || value != 0 || valuebox.indexOf(v) == -1 || 1 > v || v > 9) {
       return false;
     } else {
       valuebox = [v];
@@ -38,7 +39,8 @@ class Sdkcell {
   }
 
   bool killposible(int pv) {
-    if (!geterr || value != 0 || valuebox.indexOf(pv) == -1) {
+    // print("$geterr${value != 0}${valuebox.indexOf(pv) == -1}");
+    if (geterr || value != 0 || valuebox.indexOf(pv) == -1) {
       return false;
     } else {
       valuebox.remove(pv);
@@ -71,16 +73,39 @@ class Sdkmain {
       [(position ~/ 27) * 3 + (position % 9) ~/ 3, ((position ~/ 9) % 3) * 3 + position % 3];
   List<Sdkcell> pos2relevant(int position) {
     var gc = pos2gridindex(position);
-    var ret = [];
+    var lr = pos2linerow(position);
+    List<Sdkcell> ret = [];
     var _r;
+    var _rr=[];
+    print("$gc,$lr");
     for (var i = 0; i < 9; i++) {
-      if (gc[1] != i) {
-        _r = gridindex2pos(gc[0], i);
-        if (ret.indexOf(_r) == -1) {
-          ret.add(_sdkdt1[_r]);
-        }
+      print("i=$i");
+      _r = gridindex2pos(gc[0], i);
+      print(_r);
+      if (_rr.indexOf(_r) == -1 && _r!= position) {
+        
+        ret.add(_sdkdt1[_r]);
+        _rr.add(_r);
       }
+      _r = lr[0]*9+i;
+      print(_r);
+
+      if (_rr.indexOf(_r) == -1 && _r!= position) {
+        ret.add(_sdkdt1[_r]);
+        _rr.add(_r);
+      }
+      _r = i*9+lr[1];
+      print(_r);
+      if (_rr.indexOf(_r)== -1 && _r!= position) {
+        ret.add(_sdkdt1[_r]);
+        _rr.add(_r);
+      }
+      
     }
+    
+    print(ret.length);
+    print(_rr);
+    
     return ret;
   }
 
@@ -153,7 +178,9 @@ class Sdkmain {
     return _his.removeLast();
   }
 
-  cellsetvalue(pos, value) {
+  cellsetvalue(grid,index, value) {
+    var pos=grid~/3*27+index~/3*9+grid%3*3+index%3;
+    print("pps$pos");
     var _h = {
       "value": [0, 0],
       "killposible": [],
@@ -165,6 +192,7 @@ class Sdkmain {
     }
     assert(cell.setvalue(value), "position $pos set value $value error");
     _h["value"] = [pos, value];
+    print(pos2relevant(pos).toList());
     for (var item in pos2relevant(pos)) {
       if (item.value == 0) {
         if (item.killposible(value)) {
@@ -270,7 +298,7 @@ class _SdkGridState extends State<SdkGrid> {
                                           });
                                         },
                                         // onTapDown: (dt){},
-                                        child: this.widget.smin.data[x * 9 + y].value == 0
+                                        child: this.widget.smin.data[x~/3*27+y~/3 * 9 + x%3*3+y%3].value == 0
                                             ? GridView.count(
                                                 padding: EdgeInsets.zero,
                                                 crossAxisCount: 3,
@@ -282,11 +310,11 @@ class _SdkGridState extends State<SdkGrid> {
                                                       color: _c1,
                                                       padding: EdgeInsets.all(1),
                                                       child: Text(
-                                                          this.widget.smin.data[x * 9 + y].valuebox.indexOf(z+1) == -1
+                                                          this.widget.smin.data[x~/3*27+y~/3 * 9 + x%3*3+y%3].valuebox.indexOf(z+1) == -1
                                                               ? " "
                                                               : (z+1).toString()));
                                                 }).toList())
-                                            : Text(this.widget.smin.data[x * 9 + y].value.toString())));
+                                            : Text(this.widget.smin.data[x~/3*27+y~/3 * 9 + x%3*3+y%3].value.toString())));
                               }).toList()));
                     }).toList()))),
         Container(
@@ -294,9 +322,8 @@ class _SdkGridState extends State<SdkGrid> {
             height: 40,
             child: Row(children: <Widget>[
               FlatButton(child: Text("填入"), onPressed: () {
-                var _ppp=msg[1][0] *9+  msg[1][1] ;
                 if( msg[1][0] != -1 && msg[1][1] != -1){
-                  this.widget.smin.cellsetvalue(_ppp, msg[2]);
+                  this.widget.smin.cellsetvalue(msg[1][0],msg[1][1], msg[2]);
                   setState(() {});
                 }
 
