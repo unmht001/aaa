@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import "package:aaa/shaixuan.dart";
 import 'package:aaa/data.dart';
+import './pck/data_type_support.dart';
 
 class Shujia extends StatefulWidget {
   Shujia({Key key, this.pa}) : super(key: key);
@@ -40,9 +41,7 @@ class _ShujiaState extends State<Shujia> with SingleTickerProviderStateMixin {
                     onPressed: () {
                       showGeneralDialog(
                           context: context,
-                          pageBuilder: (context, a, b) {
-                            return Shaixuan();
-                          },
+                          pageBuilder: (context, a, b) => Shaixuan(),
                           barrierDismissible: false,
                           barrierLabel: 'barrierLabel',
                           transitionDuration: Duration(milliseconds: 400));
@@ -54,28 +53,26 @@ class _ShujiaState extends State<Shujia> with SingleTickerProviderStateMixin {
                 indicatorSize: TabBarIndicatorSize.label,
                 indicatorColor: Colors.white,
                 tabs: <Widget>[Tab(text: "书架"), Tab(text: "关注")])),
-        // floatingActionButton: FloatingActionButton(
-        //   onPressed: (){
-        //     setState(() {
-        //      initok=false;
-        //     });
-        //   },
-        // ),
         body: Container(
             alignment: Alignment.center,
             child: TabBarView(controller: _p1ctl, children: <Widget>[
               Container(
                   alignment: Alignment.center,
                   child: ListView(
-                      children: bdlist.map((BookData x) {
-                    // print(x);
-                    return getCard(x, context, actn: () {
-                      (pa[0])(x);
-                    });
-                  }).toList())),
+                      // children: bdlist// bdlist 是保存在手机上的目录,
+                      children: getCards(
+                          ListenerBox.instance['bks'].value is List ? ListenerBox.instance['bks'].value : [],
+                          context,
+                          pa))),
               Center(child: Text("关注"))
             ])));
   }
+}
+
+List<Widget> getCards(List lst, BuildContext context, List pa) {
+  return lst.map((x) {
+    return getCard(x as BookData, context, actn: () => (pa[0])(x));
+  }).toList();
 }
 
 Widget getCard(BookData book, BuildContext context, {VoidCallback actn}) {

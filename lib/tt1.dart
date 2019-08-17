@@ -8,7 +8,7 @@ class Sdkcell {
   int value;
   bool showvalue;
   int position;
-  bool locked=false;
+  bool locked = false;
 
   int get sline => position ~/ 9;
   int get srow => position % 9;
@@ -22,7 +22,7 @@ class Sdkcell {
   }
 
   bool setvalue(int v) {
-    print("${value == null} ${value != 0} ${valuebox.indexOf(v) == -1} ${1 >= v} ${ v >= 9}");
+    print("${value == null} ${value != 0} ${valuebox.indexOf(v) == -1} ${1 >= v} ${v >= 9}");
     if (value == null || value != 0 || valuebox.indexOf(v) == -1 || 1 > v || v > 9) {
       return false;
     } else {
@@ -76,36 +76,34 @@ class Sdkmain {
     var lr = pos2linerow(position);
     List<Sdkcell> ret = [];
     var _r;
-    var _rr=[];
+    var _rr = [];
     print("$gc,$lr");
     for (var i = 0; i < 9; i++) {
-      print("i=$i");
+      // print("i=$i");
       _r = gridindex2pos(gc[0], i);
-      print(_r);
-      if (_rr.indexOf(_r) == -1 && _r!= position) {
-        
+      // print(_r);
+      if (_rr.indexOf(_r) == -1 && _r != position) {
         ret.add(_sdkdt1[_r]);
         _rr.add(_r);
       }
-      _r = lr[0]*9+i;
-      print(_r);
+      _r = lr[0] * 9 + i;
+      // print(_r);
 
-      if (_rr.indexOf(_r) == -1 && _r!= position) {
+      if (_rr.indexOf(_r) == -1 && _r != position) {
         ret.add(_sdkdt1[_r]);
         _rr.add(_r);
       }
-      _r = i*9+lr[1];
-      print(_r);
-      if (_rr.indexOf(_r)== -1 && _r!= position) {
+      _r = i * 9 + lr[1];
+      // print(_r);
+      if (_rr.indexOf(_r) == -1 && _r != position) {
         ret.add(_sdkdt1[_r]);
         _rr.add(_r);
       }
-      
     }
-    
-    print(ret.length);
-    print(_rr);
-    
+
+    // print(ret.length);
+    // print(_rr);
+
     return ret;
   }
 
@@ -170,7 +168,7 @@ class Sdkmain {
     return _ret;
   }
 
-  savehis(List his) {
+  savehis(his) {
     _his.add(his);
   }
 
@@ -178,21 +176,24 @@ class Sdkmain {
     return _his.removeLast();
   }
 
-  cellsetvalue(grid,index, value) {
-    var pos=grid~/3*27+index~/3*9+grid%3*3+index%3;
-    print("pps$pos");
+  cellsetvalue(grid, index, value) {
+    var pos = grid ~/ 3 * 27 + index ~/ 3 * 9 + grid % 3 * 3 + index % 3;
+    // print("pps$pos");
     var _h = {
       "value": [0, 0],
       "killposible": [],
       "setposble": []
     };
     var cell = _sdkdt1[pos];
-    if (cell.locked){
+    if (cell.locked) {
       return;
     }
-    assert(cell.setvalue(value), "position $pos set value $value error");
+    if (! cell.setvalue(value)){
+      return;
+    }
+    // assert(cell.setvalue(value), "position $pos set value $value error");
     _h["value"] = [pos, value];
-    print(pos2relevant(pos).toList());
+    // print(pos2relevant(pos).toList());
     for (var item in pos2relevant(pos)) {
       if (item.value == 0) {
         if (item.killposible(value)) {
@@ -202,8 +203,14 @@ class Sdkmain {
         continue;
       }
     }
-    _his.add(_h);
+    savehis(_h);
+    // _his.add(_h);
   }
+
+  init({List lst,Map mp}){
+
+  }
+
 
   Sdkmain() {
     for (var i = 0; i < 81; i++) {
@@ -238,6 +245,9 @@ class _SdkGridState extends State<SdkGrid> {
     "show someting",
     [-1, -1], //坐标信息
     1, //上次选中的数字
+    -1, //按扭状态
+    0,//0正常状态，1错误状态
+
   ];
 
   Color getcl(x, y) {
@@ -298,7 +308,12 @@ class _SdkGridState extends State<SdkGrid> {
                                           });
                                         },
                                         // onTapDown: (dt){},
-                                        child: this.widget.smin.data[x~/3*27+y~/3 * 9 + x%3*3+y%3].value == 0
+                                        child: this
+                                                    .widget
+                                                    .smin
+                                                    .data[x ~/ 3 * 27 + y ~/ 3 * 9 + x % 3 * 3 + y % 3]
+                                                    .value ==
+                                                0
                                             ? GridView.count(
                                                 padding: EdgeInsets.zero,
                                                 crossAxisCount: 3,
@@ -309,28 +324,76 @@ class _SdkGridState extends State<SdkGrid> {
                                                       alignment: Alignment.center,
                                                       color: _c1,
                                                       padding: EdgeInsets.all(1),
-                                                      child: Text(
-                                                          this.widget.smin.data[x~/3*27+y~/3 * 9 + x%3*3+y%3].valuebox.indexOf(z+1) == -1
-                                                              ? " "
-                                                              : (z+1).toString()));
+                                                      child: Text(this
+                                                                  .widget
+                                                                  .smin
+                                                                  .data[x ~/ 3 * 27 + y ~/ 3 * 9 + x % 3 * 3 + y % 3]
+                                                                  .valuebox
+                                                                  .indexOf(z + 1) ==
+                                                              -1
+                                                          ? " "
+                                                          : (z + 1).toString()));
                                                 }).toList())
-                                            : Text(this.widget.smin.data[x~/3*27+y~/3 * 9 + x%3*3+y%3].value.toString())));
+                                            : Text(this
+                                                .widget
+                                                .smin
+                                                .data[x ~/ 3 * 27 + y ~/ 3 * 9 + x % 3 * 3 + y % 3]
+                                                .value
+                                                .toString())));
                               }).toList()));
                     }).toList()))),
         Container(
             width: 400,
             height: 40,
             child: Row(children: <Widget>[
-              FlatButton(child: Text("填入"), onPressed: () {
-                if( msg[1][0] != -1 && msg[1][1] != -1){
-                  this.widget.smin.cellsetvalue(msg[1][0],msg[1][1], msg[2]);
-                  setState(() {});
-                }
-
-              }),
-              FlatButton(child: Text("清除"), onPressed: () {}),
-              FlatButton(child: Text("后退"), onPressed: () {}),
-              FlatButton(child: Text("试填"), onPressed: () {})
+              FlatButton(
+                  child: Text("填入"),
+                  color: msg[3] == 0 ? Colors.yellow : Colors.green,
+                  onPressed: () {
+                    setState(() {
+                      if (msg[3] == 0) {
+                        msg[3] = -1;
+                      } else {
+                        msg[3] = 0;
+                      }
+                    });
+                  }),
+              FlatButton(
+                  child: Text("清除"),
+                  color: msg[3] == 1 ? Colors.yellow : Colors.green,
+                  onPressed: () {
+                    setState(() {
+                      if (msg[3] == 1) {
+                        msg[3] = -1;
+                      } else {
+                        msg[3] = 1;
+                      }
+                    });
+                  }),
+              FlatButton(
+                  child: Text("后退"),
+                  color: msg[3] == 2 ? Colors.yellow : Colors.green,
+                  onPressed: () {
+                    setState(() {
+                      if (msg[3] == 2) {
+                        msg[3] = -1;
+                      } else {
+                        msg[3] = 2;
+                      }
+                    });
+                  }),
+              FlatButton(
+                  child: Text("试填"),
+                  color: msg[3] == 3 ? Colors.yellow : Colors.green,
+                  onPressed: () {
+                    setState(() {
+                      if (msg[3] == 3) {
+                        msg[3] = -1;
+                      } else {
+                        msg[3] = 3;
+                      }
+                    });
+                  })
             ])),
         Container(
             width: 396,
@@ -347,6 +410,10 @@ class _SdkGridState extends State<SdkGrid> {
                     onPressed: () {
                       setState(() {
                         msg[2] = z;
+                        if (msg[1][0] != -1 && msg[1][1] != -1 && msg[3]==0) {
+                          this.widget.smin.cellsetvalue(msg[1][0], msg[1][1], msg[2]);
+                          setState(() {});
+                        }
                       });
                     });
               }).toList(),

@@ -2,7 +2,7 @@ import 'package:aaa/data.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'dart:convert';
-
+import './pck/data_type_support.dart';
 log(String st) {
   print(st);
   loadingtext += ("\n" + "st");
@@ -49,7 +49,7 @@ checkdata() async {
 
     if (_sdtdd == "" || _sdtdd == null) {
       log("init bookdatapre into json file");
-      var _bdj = json.encode(bookdatapre);
+      var _bdj = json.encode(ListenerBox.instance['bks'].value);
       log("encode bookdatapre ok!");
       _bdjfile = await _bdjfile.writeAsString(_bdj);
       log("write data string to file ok\n try to get string from file,");
@@ -88,6 +88,7 @@ initsdkdata() async {
 }
 
 init() async {
+  StateInit();
   checkdata();
   initsdkdata();
   while (!(checkdataok & sdkdatainited)) {
