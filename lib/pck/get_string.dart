@@ -18,13 +18,13 @@ class PageOp {
       return 'unknow charset : $charset';
   }
 
-  static getmenudata({BookData book}) async => await getS(book ?? ListenerBox.instance['bk'].value);
+  
 
   static getpagedata({BookData book ,MyListener lsner}) async {
-
-    var lsn = lsner ??ListenerBox.instance['pagedoc'];
-    if (lsn==ListenerBox.instance['pagedoc']) ListenerBox.instance['cpLoaded'].value=false;
     BookData bk = book ?? ListenerBox.instance['bk'].value;
+    var lsn = lsner ??bk.pageLsn?? ListenerBox.instance['pagedoc'];
+    if (lsn==ListenerBox.instance['pagedoc']) ListenerBox.instance['cpLoaded'].value=false;
+    
     try {
       Dio dio = new Dio(
         BaseOptions(contentType: ContentType.html, responseType: ResponseType.bytes),
@@ -46,8 +46,8 @@ class PageOp {
     }
   }
 
-  static getS(BookData bk) async {
-    var lsn = ListenerBox.instance['menu'];
+  static getmenudata(BookData bk) async {
+    var lsn = bk.menuLsn;
     try {
       Dio dio = new Dio(
         BaseOptions(contentType: ContentType.html, responseType: ResponseType.bytes),

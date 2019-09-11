@@ -1,7 +1,8 @@
+import 'package:aaa/pck/get_string.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mytts8/mytts8.dart';
-import '../data.dart';
+// import '../data.dart';
 import 'data_type_support.dart';
 // import 'value_listener.dart';
 
@@ -82,7 +83,7 @@ settingPage(BuildContext context, Function(double) onchange) {
 class MenuPage extends StatelessWidget {
   final Function getpagedata;
   final Function itemonpress;
-  MenuPage({Key key, this.getpagedata, this.itemonpress}) : super(key: key);
+  MenuPage({Key key, getpagedata, this.itemonpress}) : this.getpagedata=getpagedata??PageOp.getpagedata, super(key: key);
   @override
   Widget build(BuildContext context) {
     BookData bk = ListenerBox.instance["bk"].value;
@@ -93,8 +94,8 @@ class MenuPage extends StatelessWidget {
                 child: Text(bk.menudata[bk.menudata.length - 1 - index][1].toString(), softWrap: true),
                 onPressed: () {
                   bk.selected = bk.menudata.length - 1 - index;
-                  getpagedata();
-                  if (itemonpress != null) itemonpress();
+                  this.getpagedata();
+                  if (itemonpress != null) itemonpress(bk);
                 }))
         : ListView(children: <Widget>[Text(ListenerBox.instance['menu'].value.toString(), softWrap: true)]);
   }
@@ -124,7 +125,7 @@ class ContentPage extends StatefulWidget {
   _ContentPageState createState() => _ContentPageState();
 
   static gettts() {
-    if (ListenerBox.instance['tts'].value is String) StateInit();
+    if (ListenerBox.instance['tts'].value is String) print('tts init error');
     return ListenerBox.instance['tts'].value;
   }
 }

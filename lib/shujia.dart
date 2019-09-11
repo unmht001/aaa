@@ -59,7 +59,6 @@ class _ShujiaState extends State<Shujia> with SingleTickerProviderStateMixin {
               Container(
                   alignment: Alignment.center,
                   child: ListView(
-                      // children: bdlist// bdlist 是保存在手机上的目录,
                       children: getCards(
                           ListenerBox.instance['bks'].value is List ? ListenerBox.instance['bks'].value : [],
                           context,

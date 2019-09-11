@@ -1,5 +1,21 @@
+import 'dart:async';
+
+
+import "dart:math";
 import 'package:flutter/material.dart';
 import 'dart:convert';
+
+
+String getUid(int length){
+  String alphabet = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM';
+  int strlenght = length; 
+  String left = '';
+  for (var i = 0; i < strlenght; i++) {
+    left = left + alphabet[Random().nextInt(alphabet.length)];
+  }
+return left;
+}
+
 class Chain {
   Chain _father;
   Chain _son;
@@ -69,7 +85,10 @@ class BookData {
   String contentSoupTap;
   String contentPatten;
 // 地址相关
-
+  
+  String uid;
+  MyListener menuLsn;
+  MyListener pageLsn;
   Map _mp;
 
   String toJson() {
@@ -106,6 +125,11 @@ class BookData {
       this.siteCharset,
       this.contentSoupTap: "",
       this.contentPatten: ""}) {
+        uid=getUid(10);
+        menuLsn=ListenerBox.instance["menu-"+uid];
+        menuLsn.value="等待目录载入....";
+        pageLsn=ListenerBox.instance["page-"+uid];
+        pageLsn.value="等待页面载入....";
     this._mp = {
       "id": this.id,
       "pic": this.pic,
@@ -129,7 +153,8 @@ class BookData {
       "selected": this.selected,
       "siteCharset": this.siteCharset,
       "contentSoupTap": this.contentSoupTap,
-      "contentPatten": this.contentPatten
+      "contentPatten": this.contentPatten,
+      "uid":this.uid
     };
   }
   BookData.create(Map mp)
@@ -166,19 +191,20 @@ class MyListener {
   Function onGetter = () {};
   Function onSetter = () {};
   Function afterSetter = () {};
+  bool inited=false;
   Map<String ,Function> afterSetterList={};
   
   
   // Function afterGetter=(){};
   get value {
     this.onGetter();
-    return _v;
-    // this.afterGetter();
+    return this.inited?_v:null;
   }
 
   set value(var va) {
     this.onSetter();
     _v = va;
+    this.inited=true;
     this.afterSetter();
   }
 }
@@ -295,4 +321,34 @@ class Blockcelldata {
   Color tcolor;
   double ftsz;
   Blockcelldata(this.tt, this.count, {this.ftsz: 13, this.tcolor: Colors.white});
+}
+//todo: 写一个dart 的 类似 python 的 async.event
+class EventGun{
+  bool isFired=false;
+  bool isWaiting=false; 
+
+  Completer _completer= new Completer();
+
+  Future waitFire() {
+    if (this._completer.isCompleted) throw AppException("Gun is destroyed");
+    if (this.isFired) throw AppException("Gun is fired");
+    if (this.isWaiting) throw AppException("Gun is on some waiting ");
+    this.isWaiting=true;
+    return this._completer.future;
+  }
+  fire([arg]){
+    if (this._completer.isCompleted) throw AppException("Gun is destroyed");
+    if (this.isFired) throw AppException("Gun is fired");
+    if (!this.isWaiting) throw AppException("Gun is not waiting ");
+    this.isWaiting=false;
+    this.isFired=false;
+    this._completer.complete(arg);
+  }
+
+
+}
+class AppException implements Exception{
+  final String message;
+  const AppException([this.message]);
+  String toString() => message ?? 'AppException';
 }

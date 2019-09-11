@@ -1,8 +1,13 @@
+import 'dart:async';
+
 import 'package:aaa/data.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'dart:convert';
 import './pck/data_type_support.dart';
+import 'package:flutter/material.dart';
+import 'package:mytts8/mytts8.dart';
+
 log(String st) {
   print(st);
   loadingtext += ("\n" + "st");
@@ -63,9 +68,8 @@ checkdata() async {
       bdlist.add(BookData.create(json.decode(it)));
     }
     log("book data is loaded, ${bdlist.length} data found");
-    
+
     await Future.delayed(Duration(seconds: 1));
-    checkdataok = true;
   } catch (e) {
     log(e.toString() + "\nsomething wrong ");
   }
@@ -84,16 +88,138 @@ initsdkdata() async {
   await Future.delayed(Duration(milliseconds: 100));
 
   print("sdkdata init ok");
-  sdkdatainited = true;
 }
 
-init() async {
-  StateInit();
-  checkdata();
-  initsdkdata();
-  while (!(checkdataok & sdkdatainited)) {
-    log("init waiting");
-    await Future.delayed(Duration(milliseconds: 400));
+class StateInit {
+  static StateInit _instance;
+  static StateInit get instance => _instance ?? new StateInit._internal();
+  factory StateInit() => _instance ?? new StateInit._internal();
+  static bool _inited = false;
+  static get inited => _inited;
+  static Function afterinit;
+  static set inited(bool value) {
+    _inited = value;
+    afterinit();
   }
-  initok = true;
+
+  StateInit._internal() {
+    if (StateInit._instance == null) {
+      var bk1 = BookData(
+        id: 1,
+        name: "剑来",
+        baseUrl: "http://www.shumil.co/jianlai/",
+        menuUrl: "index.html",
+        menuSoupTag: "div.content",
+        menuPattan: "(<li.+?/li>)",
+        siteCharset: 'gbk',
+        contentPatten: "</div>[^>]+?(<p>[\\s\\S]+?</p>)",
+        contentSoupTap: '#content',
+        author: "烽火戏诸侯",
+        state: "连载",
+        progress: "已读到最新章节",
+        gengxintixing: true,
+        shuyouquanxinxiaoxi: true,
+      );
+      var bk2 = BookData(
+        id: 2,
+        name: "还是地球人狠",
+        baseUrl: "http://www.shumil.co/huanshidiqiurenhen/",
+        menuUrl: "index.html",
+        menuSoupTag: "div.content",
+        menuPattan: "(<li.+?/li>)",
+        siteCharset: 'gbk',
+        contentPatten: "</div>[^>]+?(<p>[\\s\\S]+?</p>)",
+        contentSoupTap: '#content',
+        author: "不知道",
+        state: "连载",
+        progress: "已读到最新章节",
+        gengxintixing: true,
+        shuyouquanxinxiaoxi: true,
+      );
+      var bk3 = BookData(
+        id: 3,
+        name: "星辰之主",
+        baseUrl: "http://www.shumil.co/xingchenzhizhu/",
+        menuUrl: "index.html",
+        menuSoupTag: "div.content",
+        menuPattan: "(<li.+?/li>)",
+        siteCharset: 'gbk',
+        contentPatten: "</div>[^>]+?(<p>[\\s\\S]+?</p>)",
+        contentSoupTap: '#content',
+        author: "减肥专家",
+        state: "连载",
+        progress: "已读到最新章节",
+        gengxintixing: true,
+        shuyouquanxinxiaoxi: true,
+      );
+      var bk4 = BookData(
+        id: 4,
+        name: "黎明之剑",
+        baseUrl: "http://www.shumil.co/limingzhijian/",
+        menuUrl: "index.html",
+        menuSoupTag: "div.content",
+        menuPattan: "(<li.+?/li>)",
+        siteCharset: 'gbk',
+        contentPatten: "</div>[^>]+?(<p>[\\s\\S]+?</p>)",
+        contentSoupTap: '#content',
+        author: "大眼珠子",
+        state: "连载",
+        progress: "已读到最新章节",
+        gengxintixing: true,
+        shuyouquanxinxiaoxi: true,
+      );
+      var bk5 = BookData(
+        id: 5,
+        name: "第一序列",
+        baseUrl: "http://www.shumil.co/dixulie/",
+        menuUrl: "index.html",
+        menuSoupTag: "div.content",
+        menuPattan: "(<li.+?/li>)",
+        siteCharset: 'gbk',
+        contentPatten: "</div>[^>]+?(<p>[\\s\\S]+?</p>)",
+        contentSoupTap: '#content',
+        author: "不知道",
+        state: "连载",
+        progress: "已读到最新章节",
+        gengxintixing: true,
+        shuyouquanxinxiaoxi: true,
+      );
+      ListenerBox.instance['bk'].value = bk1;
+      ListenerBox.instance['bks'].value = [bk1, bk2, bk3, bk4, bk5];
+      ListenerBox.instance['isreading'].value = false;
+      ListenerBox.instance['cpLoaded'].value = false;
+      ListenerBox.instance['tts'].value = Mytts8();
+      ListenerBox.instance['speechrate'].value = 1.5;
+      ListenerBox.instance['pitch'].value = 0.8;
+      ListenerBox.instance['navs'].value = [
+        NavData("书架", Icons.book),
+        NavData("精选", Icons.bookmark),
+        NavData("发现", Icons.search),
+        NavData("我", Icons.person)
+      ];
+      inited = true;
+    }
+  }
+}
+
+init(EventGun ff) async {
+  await Future.delayed(Duration(seconds: 1));
+
+  if (StateInit.inited) {
+    return true;
+  } else {
+    while (true) {
+      Future.delayed(Duration(seconds: 1), () => StateInit());
+      // if (ff.isFired) ff = new EventGun();
+      StateInit.afterinit = ff.fire;
+      await ff.waitFire();
+      if (StateInit.inited)
+        break;
+      else
+        StateInit();
+    }
+    await checkdata();
+    await initsdkdata();
+  }
+  return true;
 }

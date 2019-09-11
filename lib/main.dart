@@ -3,19 +3,40 @@ import 'package:aaa/init_fun.dart';
 import 'package:aaa/page2.dart';
 import 'package:aaa/page3.dart';
 import 'package:aaa/page4.dart';
+import 'package:aaa/pck/get_string.dart';
+import 'package:aaa/pck/tts_helper.dart';
 import 'package:aaa/shujia.dart';
 import 'package:flutter/material.dart';
 import './pck/data_type_support.dart';
 
+EventGun gun = new EventGun();
+MyListener initok = new MyListener();
+
+// bool initok = false;
 void main() async {
-  init();
+  initok.value = false;
+  init(gun).then((bool) => initok.value = true);
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
+//用于生成一个加载页面
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(theme: ThemeData(primarySwatch: Colors.blue), home: MyHomePage());
+    if (!initok.value) {
+      initok.afterSetter = () {
+        setState(() {});
+      };
+      return MaterialApp(
+          theme: ThemeData(primarySwatch: Colors.blue), home: Scaffold(body: Container(child: Text(loadingtext))));
+    } else {
+      return MaterialApp(theme: ThemeData(primarySwatch: Colors.blue), home: MyHomePage());
+    }
   }
 }
 
@@ -29,18 +50,12 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
   TabController _controller;
   final PageController _pctler = new PageController();
 
+  // BookData _bk;
+
   BookData _bk = new BookData();
 
   @override
   Widget build(BuildContext context) {
-    if (!initok) {
-      Future.delayed(const Duration(seconds: 1), () {
-        setState(() {});
-      });
-
-      return Scaffold(body: Container(child: Text(loadingtext)));
-    }
-
     return PageView(controller: _pctler, children: <Widget>[
       Scaffold(
           body: TabBarView(controller: _controller, children: <Widget>[
@@ -54,23 +69,36 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
               iconSize: 24.0,
               currentIndex: _cindex,
               fixedColor: Colors.red,
-              items: btms.map((NavData x) {
-                return BottomNavigationBarItem(title: Text(x.tt), icon: Icon(x.icon));
-              }).toList(),
-              onTap: (int x) {
-                setState(() {
-                  _cindex = x;
-                  _controller.index = x;
-                });
-              })),
+              items: navs(),
+              onTap: (int x) => setState(() {
+                    _cindex = x;
+                    _controller.index = x;
+                  }))),
+      Container(
+        color: Colors.brown,
+        child: MenuPage(itemonpress: (BookData bk) {
+
+          openpage(bk,page:2);
+        }),
+      ),
       Container(
           color: Colors.brown,
-          child: FlatButton(
-              onPressed: () {
-                openpage(this._bk, page: 0);
-              },
-              child: Container(color: Colors.brown, child: Text(this._bk.name + "返回"))))
+          child: ContentPage(pageReadOverAction: () {
+            if (ListenerBox.instance['bk'].value.selected == 0)
+              print('readover');
+            else {
+              ListenerBox.instance['bk'].value.selected = ListenerBox.instance['bk'].value.selected - 1;
+              PageOp.getpagedata();
+            }
+          }))
     ]);
+  }
+
+  List<BottomNavigationBarItem> navs() {
+    List<BottomNavigationBarItem> _r = [];
+    for (var x in (ListenerBox.instance['navs'].inited ? ListenerBox.instance['navs'].value : []))
+      _r.add(BottomNavigationBarItem(title: Text(x.tt), icon: Icon(x.icon)));
+    return _r;
   }
 
   @override
@@ -81,12 +109,15 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
 
   @override
   void initState() {
-    this._controller = TabController(vsync: this, length: btms.length);
+    this._controller = TabController(
+        vsync: this, length: ListenerBox.instance['navs'].inited ? ListenerBox.instance['navs'].value.length : 0);
     super.initState();
   }
 
   void openpage(BookData bk, {int page: 1}) {
     this._bk = bk;
+    bk.menuLsn.afterSetter = () => setState(() {});
+    PageOp.getmenudata(bk);
     this._pctler.animateToPage(page, duration: Duration(milliseconds: 300), curve: Curves.ease);
   }
 }

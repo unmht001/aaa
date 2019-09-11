@@ -2,6 +2,40 @@ import 'package:flutter/material.dart';
 import 'package:aaa/data.dart';
 import './pck/data_type_support.dart';
 
+List shaixuanState1 = <Blockcelldata>[
+  Blockcelldata("连载", 0, tcolor: Colors.grey[300]),
+  Blockcelldata("完本", 0, tcolor: Colors.grey[300]),
+  Blockcelldata("未读过", 0, tcolor: Colors.grey[300]),
+  Blockcelldata("已读完", 0, tcolor: Colors.grey[300]),
+  Blockcelldata("超过50章未读", 0, tcolor: Colors.grey[300]),
+  Blockcelldata("超过100章未读", 0, tcolor: Colors.grey[300]),
+  Blockcelldata("10天内有更新", 0, tcolor: Colors.grey[300]),
+  Blockcelldata("30天内有更新", 0, tcolor: Colors.grey[300]),
+];
+List shaixuanState2 = <Blockcelldata>[
+  Blockcelldata("男生", 0, tcolor: Colors.grey[300]),
+  Blockcelldata("女生", 0, tcolor: Colors.grey[300]),
+  Blockcelldata("漫画", 0, tcolor: Colors.grey[300]),
+  Blockcelldata("听书", 0, tcolor: Colors.grey[300]),
+  Blockcelldata("出版", 0, tcolor: Colors.grey[300]),
+  Blockcelldata(
+    null,
+    null,
+  ),
+  Blockcelldata("都市", 0, tcolor: Colors.grey[300]),
+  Blockcelldata("历史", 0, tcolor: Colors.grey[300]),
+  Blockcelldata("科幻", 0, tcolor: Colors.grey[300]),
+  Blockcelldata("玄幻", 0, tcolor: Colors.grey[300]),
+  Blockcelldata(
+    null,
+    null,
+  ),
+  Blockcelldata(
+    null,
+    null,
+  ),
+];
+
 class Shaixuan extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -68,8 +102,6 @@ Widget getlabel(String s1, String s2, {Color cl: Colors.white}) {
   );
 }
 
-
-
 Widget makeblock(List<Blockcelldata> bd, String title, int grouped) {
   assert(grouped > 1);
   List<Blockcelldata> bd2;
@@ -102,8 +134,7 @@ Widget makeblock(List<Blockcelldata> bd, String title, int grouped) {
               for (var j = 0; j < grouped - 1; j++) {
                 rs2.add(
                   Expanded(
-                    child: getlabel(bd2[i * grouped + j].tt,
-                        bd2[i * grouped + j].count.toString(),
+                    child: getlabel(bd2[i * grouped + j].tt, bd2[i * grouped + j].count.toString(),
                         cl: bd2[i * grouped + j].tcolor),
                   ),
                 );
@@ -115,8 +146,7 @@ Widget makeblock(List<Blockcelldata> bd, String title, int grouped) {
               }
               rs2.add(
                 Expanded(
-                  child: getlabel(bd2[(i + 1) * grouped - 1].tt,
-                      bd2[(i + 1) * grouped - 1].count.toString(),
+                  child: getlabel(bd2[(i + 1) * grouped - 1].tt, bd2[(i + 1) * grouped - 1].count.toString(),
                       cl: bd2[(i + 1) * grouped - 1].tcolor),
                 ),
               );
