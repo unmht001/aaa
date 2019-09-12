@@ -4,17 +4,17 @@ import 'package:aaa/data.dart';
 import './pck/data_type_support.dart';
 
 class Shujia extends StatefulWidget {
-  Shujia({Key key, this.pa}) : super(key: key);
-  final List pa;
+  Shujia({Key key, this.itemonpress}) : super(key: key);
+  final Function itemonpress;
   @override
   _ShujiaState createState() {
-    return _ShujiaState(pa: pa);
+    return _ShujiaState(itemonpress: this.itemonpress);
   }
 }
 
 class _ShujiaState extends State<Shujia> with SingleTickerProviderStateMixin {
-  _ShujiaState({this.pa}) : super();
-  final List pa;
+  _ShujiaState({this.itemonpress}) : super();
+  final Function itemonpress;
   TabController _p1ctl;
   @override
   void initState() {
@@ -62,17 +62,14 @@ class _ShujiaState extends State<Shujia> with SingleTickerProviderStateMixin {
                       children: getCards(
                           ListenerBox.instance['bks'].value is List ? ListenerBox.instance['bks'].value : [],
                           context,
-                          pa))),
+                          itemonpress))),
               Center(child: Text("关注"))
             ])));
   }
 }
 
-List<Widget> getCards(List lst, BuildContext context, List pa) {
-  return lst.map((x) {
-    return getCard(x as BookData, context, actn: () => (pa[0])(x));
-  }).toList();
-}
+List<Widget> getCards(List bookList, BuildContext context, Function itemonpress) =>
+    bookList.map((bk) => getCard(bk as BookData, context, actn: () => itemonpress(bk))).toList();
 
 Widget getCard(BookData book, BuildContext context, {VoidCallback actn}) {
   return FlatButton(

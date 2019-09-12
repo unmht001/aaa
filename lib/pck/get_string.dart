@@ -18,62 +18,72 @@ class PageOp {
       return 'unknow charset : $charset';
   }
 
-  
-
-  static getpagedata({BookData book ,MyListener lsner}) async {
-    BookData bk = book ?? ListenerBox.instance['bk'].value;
-    var lsn = lsner ??bk.pageLsn?? ListenerBox.instance['pagedoc'];
-    if (lsn==ListenerBox.instance['pagedoc']) ListenerBox.instance['cpLoaded'].value=false;
-    
+  static getpagedata(BookData book) async {
+    var f=book.readingLsn.value;
+    book.readingLsn.value=false;
+    // print(book.uid);
+    var lsn = book.pageLsn;
     try {
+      assert(book.selected != null, "未选中章节");
+      assert(book.menuLsn.value is List, "目录数据异常");
+
       Dio dio = new Dio(
         BaseOptions(contentType: ContentType.html, responseType: ResponseType.bytes),
       );
-      lsn.value = "等待";
-      var response = await dio.get(bk.baseUrl + bk.menudata[bk.selected][0]);
+
+      lsn.value = "等待页面载入....";
+      var response = await dio.get(book.baseUrl + book.menuLsn.value[book.selected][0]);
       if (response.statusCode == 200) {
-        var soup = Beautifulsoup(charsetS(response, charset: bk.siteCharset).toString());
-        var _ss = soup.find(id: bk.contentSoupTap);
-        var mch = _ss != null ? RegExp(bk.contentPatten, multiLine: true).allMatches(_ss.outerHtml) : null;
-        
-        lsn.value = mch.length != 0 ? Beautifulsoup(mch.first.group(1).toString()).doc.body.text : "没有找到";
-        
+        var soup = Beautifulsoup(charsetS(response, charset: book.siteCharset).toString());
+        var _ss = soup.find(id: book.contentSoupTap);
+        assert(_ss != null, "没有找到页面中的结果1");
+
+        var mch = RegExp(book.contentPatten, multiLine: true).allMatches(_ss.outerHtml);
+        assert(mch.length != 0, "没有找到页面中的结果2");
+
+        lsn.value = Beautifulsoup(mch.first.group(1).toString()).doc.body.text;
       } else
         lsn.value = "Request failed with status: ${response.statusCode}.";
-        if (lsn==ListenerBox.instance['pagedoc']) ListenerBox.instance['cpLoaded'].value=true;
     } catch (e) {
-      lsn.value = e.toString();
+      lsn.value = "getpagedta error"+e.toString();
+      print("getpage"+book.menuLsn.value[1].toString());
+      return false;
     }
+    if(f)book.readingLsn.value=true;
+    
+    return true;
   }
 
-  static getmenudata(BookData bk) async {
-    var lsn = bk.menuLsn;
+  static getmenudata(BookData book) async {
+    print(book.uid);
+    var lsn = book.menuLsn;
     try {
       Dio dio = new Dio(
         BaseOptions(contentType: ContentType.html, responseType: ResponseType.bytes),
       );
-      lsn.value = "等待";
-      Response response = await dio.get(bk.baseUrl + bk.menuUrl);
+      lsn.value = "等待目录载入....";
+      Response response = await dio.get(book.baseUrl + book.menuUrl);
 
       if (response.statusCode == 200) {
-        var soup = Beautifulsoup(charsetS(response, charset: bk.siteCharset).toString());
-        var s1 = soup(bk.menuSoupTag);
-        var s2 = RegExp(bk.menuPattan, multiLine: true).allMatches(s1.outerHtml);
+        var soup = Beautifulsoup(charsetS(response, charset: book.siteCharset).toString());
+        var s1 = soup(book.menuSoupTag);
+        var s2 = RegExp(book.menuPattan, multiLine: true).allMatches(s1.outerHtml);
         var s12 = RegExp("<a\\shref=\"(.+?)\">(.+?)</a>", multiLine: true);
         var _r;
 
-        lsn.value = s2 == null
-            ? "没有找到"
-            : s2.length == 0
-                ? 0
-                : bk.menudata = s2
-                    .map((vs) =>
-                        [(_r = s12.firstMatch(vs.group(1).toString())).group(1).toString(), _r.group(2).toString()])
-                    .toList();
+        assert(s2 != null, "没有找到本书");
+        assert(s2.length != 0, "章节获取失败");
+
+        lsn.value = s2
+            .map((vs) => [(_r = s12.firstMatch(vs.group(1).toString())).group(1).toString(), _r.group(2).toString()])
+            .toList();
       } else
-        lsn.value = "Request failed with status: ${response.statusCode}.";
+        lsn.value = "失败代码: ${response.statusCode}.";
     } catch (e) {
       lsn.value = e.toString();
+      return false;
     }
+    // print(book.menuLsn.value.toString());
+    return true;
   }
 }

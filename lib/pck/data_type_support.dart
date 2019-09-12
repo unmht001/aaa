@@ -1,19 +1,18 @@
 import 'dart:async';
 
-
 import "dart:math";
+import 'package:aaa/pck/get_string.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 
-
-String getUid(int length){
+String getUid(int length) {
   String alphabet = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM';
-  int strlenght = length; 
+  int strlenght = length;
   String left = '';
   for (var i = 0; i < strlenght; i++) {
     left = left + alphabet[Random().nextInt(alphabet.length)];
   }
-return left;
+  return left;
 }
 
 class Chain {
@@ -79,16 +78,18 @@ class BookData {
   String menuUrl;
   String menuSoupTag;
   String menuPattan;
-  List menudata;
+  get menudata => this.menuLsn.value;
+  set menudata(value) => this.menudata.value = value;
   num selected;
   String siteCharset;
   String contentSoupTap;
   String contentPatten;
 // 地址相关
-  
+
   String uid;
   MyListener menuLsn;
   MyListener pageLsn;
+  MyListener readingLsn;
   Map _mp;
 
   String toJson() {
@@ -98,6 +99,13 @@ class BookData {
   String toString() {
     return this._mp.toString();
   }
+
+  continueReading(){
+
+  }
+
+  getpagedata() async => await PageOp.getpagedata(this);  
+  getmenudata() async => await  PageOp.getmenudata(this);
 
   BookData(
       {this.id = 0,
@@ -120,16 +128,18 @@ class BookData {
       this.menuUrl: "",
       this.menuSoupTag: "",
       this.menuPattan: "",
-      this.menudata,
       this.selected: 0,
       this.siteCharset,
       this.contentSoupTap: "",
       this.contentPatten: ""}) {
-        uid=getUid(10);
-        menuLsn=ListenerBox.instance["menu-"+uid];
-        menuLsn.value="等待目录载入....";
-        pageLsn=ListenerBox.instance["page-"+uid];
-        pageLsn.value="等待页面载入....";
+    uid = getUid(10);
+    pageLsn = ListenerBox.instance["page-" + uid];
+    pageLsn.value = "等待页面载入....";
+    menuLsn = ListenerBox.instance["menu-" + uid];
+    menuLsn.value = "等待目录载入....";
+    readingLsn=ListenerBox.instance["reading-" + uid];
+    readingLsn.value=false;
+
     this._mp = {
       "id": this.id,
       "pic": this.pic,
@@ -154,7 +164,7 @@ class BookData {
       "siteCharset": this.siteCharset,
       "contentSoupTap": this.contentSoupTap,
       "contentPatten": this.contentPatten,
-      "uid":this.uid
+      "uid": this.uid
     };
   }
   BookData.create(Map mp)
@@ -179,7 +189,6 @@ class BookData {
             menuUrl: mp["menuUrl"] ?? "",
             menuSoupTag: mp["menuSoupTag"] ?? "",
             menuPattan: mp["menuPattan"] ?? "",
-            menudata: mp["menudata"] ?? [],
             selected: mp["selected"] ?? 0,
             siteCharset: mp["siteCharset"] ?? "",
             contentSoupTap: mp["contentSoupTap"] ?? "",
@@ -191,20 +200,19 @@ class MyListener {
   Function onGetter = () {};
   Function onSetter = () {};
   Function afterSetter = () {};
-  bool inited=false;
-  Map<String ,Function> afterSetterList={};
-  
-  
+  bool inited = false;
+  Map<String, Function> afterSetterList = {};
+
   // Function afterGetter=(){};
   get value {
     this.onGetter();
-    return this.inited?_v:null;
+    return this.inited ? _v : null;
   }
 
   set value(var va) {
     this.onSetter();
     _v = va;
-    this.inited=true;
+    this.inited = true;
     this.afterSetter();
   }
 }
@@ -254,10 +262,6 @@ class ListenerBox {
   noSuchMethod(Invocation mirror) => print('You tried to use a non-existent member:' + '${mirror.memberName}');
 }
 
-
-
-
-
 class Textsheet extends Chain {
   static const Color hColor = Colors.yellowAccent; //高亮颜色
   static const Color lColor = Colors.greenAccent; //平常颜色
@@ -269,9 +273,9 @@ class Textsheet extends Chain {
   } //获取颜色
   Textsheet.fromMap(mp) : this.fromString(mp['document'], mp['highlight']); //获取文字
 
-  Textsheet.fromString(String document, [bool highlight]) : super() {
+  Textsheet.fromString(String document, [bool highlight=false]) : super() {
     this.data["document"] = document ?? ""; //文字
-    this.data["highlight"] = highlight ?? false;
+    this.data["highlight"] = highlight ;
   }
 
   Color get cl => this.data['highlight'] ? hColor : lColor;
@@ -280,9 +284,9 @@ class Textsheet extends Chain {
   Chain born() => Chain.exchange(new Textsheet(), super.born());
 
   changeHighlight() => this.data["highlight"] = !this.data["highlight"];
-  hightLight() => this.data["highlight"] = true;
-  disHightLight() => this.data["highlight"] = false;
-  
+  highLight() => this.data["highlight"] = true;
+  disHighLight() => this.data["highlight"] = false;
+
   static Textsheet getTextsheetChain(String text) {
     var s = text.split("\n");
     s.removeWhere((test) => test == "");
@@ -322,32 +326,33 @@ class Blockcelldata {
   double ftsz;
   Blockcelldata(this.tt, this.count, {this.ftsz: 13, this.tcolor: Colors.white});
 }
-//todo: 写一个dart 的 类似 python 的 async.event
-class EventGun{
-  bool isFired=false;
-  bool isWaiting=false; 
 
-  Completer _completer= new Completer();
+//todo: 写一个dart 的 类似 python 的 async.event
+class EventGun {
+  bool isFired = false;
+  bool isWaiting = false;
+
+  Completer _completer = new Completer();
 
   Future waitFire() {
     if (this._completer.isCompleted) throw AppException("Gun is destroyed");
     if (this.isFired) throw AppException("Gun is fired");
     if (this.isWaiting) throw AppException("Gun is on some waiting ");
-    this.isWaiting=true;
+    this.isWaiting = true;
     return this._completer.future;
   }
-  fire([arg]){
+
+  fire([arg]) {
     if (this._completer.isCompleted) throw AppException("Gun is destroyed");
     if (this.isFired) throw AppException("Gun is fired");
     if (!this.isWaiting) throw AppException("Gun is not waiting ");
-    this.isWaiting=false;
-    this.isFired=false;
+    this.isWaiting = false;
+    this.isFired = false;
     this._completer.complete(arg);
   }
-
-
 }
-class AppException implements Exception{
+
+class AppException implements Exception {
   final String message;
   const AppException([this.message]);
   String toString() => message ?? 'AppException';

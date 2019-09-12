@@ -35,12 +35,22 @@ class _MyAppState extends State<MyApp> {
       return MaterialApp(
           theme: ThemeData(primarySwatch: Colors.blue), home: Scaffold(body: Container(child: Text(loadingtext))));
     } else {
-      return MaterialApp(theme: ThemeData(primarySwatch: Colors.blue), home: MyHomePage());
+      return MaterialApp(
+          theme: ThemeData(primarySwatch: Colors.blue),
+          home: MyHomePage(
+            refresh: refreshWholePage,
+          ));
     }
+  }
+
+  refreshWholePage() {
+    setState(() {});
   }
 }
 
 class MyHomePage extends StatefulWidget {
+  MyHomePage({this.refresh});
+  final Function refresh;
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
@@ -50,20 +60,43 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
   TabController _controller;
   final PageController _pctler = new PageController();
 
-  // BookData _bk;
+  onShujiaPress(BookData bk) => setState(() {
+        this.widget.refresh();
+        ListenerBox.instance["bk"].afterSetter = () {};
+        ListenerBox.instance["bk"].value.readingLsn.value = false;
+        ListenerBox.instance["bk"].value = bk;
+        bk.menuLsn.afterSetter = () => setState(() {});
+        openpage(bk, page: 1);
+        bk.getmenudata();
+      });
+  onMenuPress(BookData bk) {
+    bk.pageLsn.afterSetter = () => setState(() {
+          this.widget.refresh();
+        });
+    openpage(bk, page: 2);
+    bk.getpagedata().then((x) {
+      setState(() {});
+    });
+  }
 
-  BookData _bk = new BookData();
+  onPagePress(BookData bk) {
+    this.widget.refresh();
+    if (ListenerBox.instance['bk'].value.selected <= 0)
+      print('readover');
+    else {
+      ListenerBox.instance['bk'].value.selected = ListenerBox.instance['bk'].value.selected - 1;
+      (ListenerBox.instance['bk'].value as BookData).getpagedata();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return PageView(controller: _pctler, children: <Widget>[
       Scaffold(
-          body: TabBarView(controller: _controller, children: <Widget>[
-            Shujia(pa: [openpage]),
-            Page2(),
-            Page3(sdkdata: sdkdata),
-            Page4()
-          ]),
+          //page 1
+          body: TabBarView(
+              controller: _controller,
+              children: <Widget>[Shujia(itemonpress: onShujiaPress), Page2(), Page3(sdkdata: sdkdata), Page4()]),
           bottomNavigationBar: BottomNavigationBar(
               type: BottomNavigationBarType.fixed,
               iconSize: 24.0,
@@ -74,23 +107,12 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                     _cindex = x;
                     _controller.index = x;
                   }))),
-      Container(
-        color: Colors.brown,
-        child: MenuPage(itemonpress: (BookData bk) {
-
-          openpage(bk,page:2);
-        }),
-      ),
-      Container(
-          color: Colors.brown,
-          child: ContentPage(pageReadOverAction: () {
-            if (ListenerBox.instance['bk'].value.selected == 0)
-              print('readover');
-            else {
-              ListenerBox.instance['bk'].value.selected = ListenerBox.instance['bk'].value.selected - 1;
-              PageOp.getpagedata();
-            }
-          }))
+      Scaffold(
+          //page 2
+          body: MenuPage(itemonpress: onMenuPress)),
+      Scaffold(
+          //page 3
+          body: ContentPage(pageReadOverAction: onPagePress))
     ]);
   }
 
@@ -115,9 +137,8 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
   }
 
   void openpage(BookData bk, {int page: 1}) {
-    this._bk = bk;
     bk.menuLsn.afterSetter = () => setState(() {});
-    PageOp.getmenudata(bk);
+    // PageOp.getmenudata(bk);
     this._pctler.animateToPage(page, duration: Duration(milliseconds: 300), curve: Curves.ease);
   }
 }

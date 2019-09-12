@@ -1,4 +1,4 @@
-import 'package:aaa/pck/get_string.dart';
+// import 'package:aaa/pck/get_string.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:mytts8/mytts8.dart';
@@ -29,7 +29,7 @@ class SliderC extends StatefulWidget {
   final Function(double) fn;
   final String label;
   final MyListener lsn;
-  SliderC(this.label, this.lsn,{Key key, this.fn}) : super(key: key);
+  SliderC(this.label, this.lsn, {Key key, this.fn}) : super(key: key);
 
   _SliderCState createState() => _SliderCState(label, fn: fn);
 }
@@ -70,7 +70,7 @@ settingPage(BuildContext context, Function(double) onchange) {
       ListenerBox.instance['tts'].value.setSpeechRate(v / 2);
       onchange(v);
     }),
-    SliderC("语调",ListenerBox.instance['pitch'], fn: (double v) {
+    SliderC("语调", ListenerBox.instance['pitch'], fn: (double v) {
       ListenerBox.instance['tts'].value.setPitch(v);
       onchange(v);
     }),
@@ -81,23 +81,21 @@ settingPage(BuildContext context, Function(double) onchange) {
 }
 
 class MenuPage extends StatelessWidget {
-  final Function getpagedata;
   final Function itemonpress;
-  MenuPage({Key key, getpagedata, this.itemonpress}) : this.getpagedata=getpagedata??PageOp.getpagedata, super(key: key);
+  BookData get book => ListenerBox.instance["bk"].value;
+  MenuPage({this.itemonpress});
   @override
   Widget build(BuildContext context) {
-    BookData bk = ListenerBox.instance["bk"].value;
-    return bk.menudata is List
+    return book.menuLsn.value is List
         ? ListView.builder(
-            itemCount: bk.menudata.length,
+            itemCount: book.menuLsn.value.length,
             itemBuilder: (BuildContext context, int index) => FlatButton(
-                child: Text(bk.menudata[bk.menudata.length - 1 - index][1].toString(), softWrap: true),
+                child: Text(book.menuLsn.value[book.menuLsn.value.length - 1 - index][1].toString(), softWrap: true),
                 onPressed: () {
-                  bk.selected = bk.menudata.length - 1 - index;
-                  this.getpagedata();
-                  if (itemonpress != null) itemonpress(bk);
+                  book.selected = book.menuLsn.value.length - 1 - index;
+                  if (itemonpress != null) itemonpress(book);
                 }))
-        : ListView(children: <Widget>[Text(ListenerBox.instance['menu'].value.toString(), softWrap: true)]);
+        : ListView(children: <Widget>[Text(book.menuLsn.value.toString(), softWrap: true)]);
   }
 }
 
@@ -110,19 +108,16 @@ class ContentPagedata {
 }
 
 class ContentPage extends StatefulWidget {
-  final Mytts8 tts;
+  Mytts8 get tts => gettts();
   final ContentPagedata pst = new ContentPagedata(); //用来表示阅读器
-  final MyListener lsn;
-  ContentPage({Key key, Function pageReadOverAction, MyListener listerner})
-      : this.tts = gettts(),
-        this.lsn = listerner ?? ListenerBox.instance['pagedoc'],
-        super(key: key) {
+  MyListener get lsn => book.pageLsn;
+  BookData get book => ListenerBox.instance["bk"].value;
+  ContentPage({Key key, Function pageReadOverAction}) : super(key: key) {
     this.pst.readingCompleteHandler = pageReadOverAction; //设置阅读器读完本页后的动作
-  } //用来表示页面状态
-  ContentPage.secondPage(String pagename, {Function fn})
-      : this(listerner: ListenerBox.instance[pagename], pageReadOverAction: fn);
+  } 
+
   @override
-  _ContentPageState createState() => _ContentPageState();
+  _ContentPageState createState() => _ContentPageState(book: this.book);
 
   static gettts() {
     if (ListenerBox.instance['tts'].value is String) print('tts init error');
@@ -131,10 +126,12 @@ class ContentPage extends StatefulWidget {
 }
 
 class _ContentPageState extends State<ContentPage> {
+  _ContentPageState({this.book});
+  final BookData book;
   @override
-  Widget build(BuildContext context) => ListenerBox.instance['document'].value is String
+  Widget build(BuildContext context) => book.pageLsn.value is String
       ? ListView(children: <Widget>[])
-      : ListView(children: chainToWidgetList(ListenerBox.instance['document'].value as Textsheet));
+      : ListView(children: chainToWidgetList(book.pageLsn.value as Textsheet));
 
   List<Widget> chainToWidgetList(Chain sss) {
     List<Widget> a = [];
@@ -148,23 +145,23 @@ class _ContentPageState extends State<ContentPage> {
 
   @override
   dispose() {
-    ListenerBox.instance['document'].afterSetter = () {};
+    this.book.pageLsn.afterSetter = () {};
     super.dispose();
   }
 
   @override
   void initState() {
     super.initState();
-    ListenerBox.instance['document'].afterSetter = () {
+    this.book.pageLsn.afterSetter = () {
       if (this.mounted) setState(() {});
     };
-    this.widget.pst.currentHL = ListenerBox.instance['document'].value = this.widget.lsn.value is String
+    this.widget.pst.currentHL = this.book.pageLsn.value = this.book.pageLsn.value is String
         ? Textsheet.getTextsheetChain(this.widget.lsn.value)
-        : this.widget.lsn.value as Textsheet;
-    this.widget.lsn.afterSetter = refreshpage;
-    ListenerBox.instance['document'].value.hightLight();
+        : this.book.pageLsn.value as Textsheet;
+    this.book.pageLsn.afterSetter = refreshpage;
+    if (this.book.pageLsn.value != null) this.book.pageLsn.value.highLight();
     ListenerBox.instance['cpLoaded'].afterSetter = () {
-      if (ListenerBox.instance['isreading'].value && ListenerBox.instance['cpLoaded'].value) startReading();
+      if (book.readingLsn.value) startReading();
     };
   }
 
@@ -173,41 +170,41 @@ class _ContentPageState extends State<ContentPage> {
       setState(() {
         this.widget.tts.setCompletionHandler(() => setState(() {
               if (this.widget.pst.currentHL.son != null) {
-                this.widget.pst.currentHL.disHightLight();
+                this.widget.pst.currentHL.disHighLight();
                 this.widget.pst.currentHL = this.widget.pst.currentHL.son;
-                this.widget.pst.currentHL.hightLight();
+                this.widget.pst.currentHL.highLight();
                 continueReading();
               } else {
-                this.widget.pst.isReading = false;
+                this.book.readingLsn.value;
                 this.widget.pst.readingCompleteHandler();
               }
             }));
-        if (this.widget.pst.isReading) this.widget.tts.speak(this.widget.pst.currentHL.text);
+        if (this.book.readingLsn.value) this.widget.tts.speak(this.widget.pst.currentHL.text);
       });
     else
       print('language is not available');
   }
 
   startReading() async {
-    this.widget.pst.isReading = true;
-    if (this.widget.lsn == ListenerBox.instance['pagedoc']) ListenerBox.instance['isreading'].value = true;
-
+    this.book.readingLsn.value = true;
+    // if (this.widget.lsn == ListenerBox.instance['pagedoc']) ListenerBox.instance['isreading'].value = true;
     continueReading();
   }
 
   stopReading() async {
-    this.widget.pst.isReading = false;
-    if (this.widget.lsn == ListenerBox.instance['pagedoc']) ListenerBox.instance['isreading'].value = false;
+    this.book.readingLsn.value = false;
+    // if (this.widget.lsn == ListenerBox.instance['pagedoc']) ListenerBox.instance['isreading'].value = false;
     this.widget.tts.stop();
     setState(() {});
   }
 
   refreshpage() {
-    this.widget.pst.currentHL = ListenerBox.instance['document'].value = this.widget.lsn.value is String
+    book.pageLsn.afterSetter=(){};
+    book.pageLsn.value=this.widget.pst.currentHL  = book.pageLsn.value is String
         ? Textsheet.getTextsheetChain(this.widget.lsn.value)
-        : this.widget.lsn.value as Textsheet;
-    this.widget.lsn.afterSetter = refreshpage;
-    ListenerBox.instance['document'].value.hightLight();
+        : book.pageLsn.value as Textsheet;
+    book.pageLsn.afterSetter = refreshpage;
+    book.pageLsn.value.highLight();
   }
 
   Widget textsheetToWidget(Textsheet sss) {
@@ -217,10 +214,11 @@ class _ContentPageState extends State<ContentPage> {
         child: GestureDetector(
             child: Text(sss.text, softWrap: true, style: TextStyle(fontWeight: FontWeight.w500, fontSize: 20.0)),
             onTap: () => setState(() {
-                  if (this.widget.pst.currentHL != null) this.widget.pst.currentHL.changeHighlight();
+                  if (this.widget.pst.currentHL != null) this.widget.pst.currentHL.disHighLight();
                   this.widget.pst.currentHL = sss;
-                  this.widget.pst.currentHL.changeHighlight();
-                  this.widget.pst.isReading ? stopReading() : startReading();
+                  this.widget.pst.currentHL.highLight();
+                  this.book.readingLsn.value=!this.book.readingLsn.value;
+                  this.book.readingLsn.value ? startReading() : stopReading();
                 })));
   }
 }
