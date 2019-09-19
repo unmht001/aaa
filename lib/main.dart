@@ -152,3 +152,6 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
     }
   }
 }
+//19.09.19
+//TODO: 一个页面阅读后,能转到下一个页面. 现在可以跳转,但在跳转的时候出了BUG,  现在做到了30%
+//TODO: 自动加载前三后三共七页.这个功能还没开始做
