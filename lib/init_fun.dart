@@ -1,12 +1,13 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:mytts8/mytts8.dart';
 
-import 'package:aaa/data.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'dart:convert';
-import './pck/data_type_support.dart';
-import 'package:flutter/material.dart';
-import 'package:mytts8/mytts8.dart';
+
+import 'pck/data_type_support.dart';
+import 'data.dart';
 
 log(String st) {
   print(st);
@@ -184,8 +185,25 @@ class StateInit {
         gengxintixing: true,
         shuyouquanxinxiaoxi: true,
       );
+        var bk6 = BookData(
+        id: 6,
+        name: "明朝败家子",
+        baseUrl: "http://www.shumil.co/mingchaobaijiazi/",
+        menuUrl: "index.html",
+        menuSoupTag: "div.content",
+        menuPattan: "(<li.+?/li>)",
+        siteCharset: 'gbk',
+        contentPatten: "</div>[^>]+?(<p>[\\s\\S]+?</p>)",
+        contentSoupTap: '#content',
+        author: "不知道",
+        state: "连载",
+        progress: "已读到最新章节",
+        gengxintixing: true,
+        shuyouquanxinxiaoxi: true,
+      );
+      
       ListenerBox.instance['bk'].value = bk1;
-      ListenerBox.instance['bks'].value = [bk1, bk2, bk3, bk4, bk5];
+      ListenerBox.instance['bks'].value = [bk1, bk2, bk3, bk4, bk5,bk6];
       ListenerBox.instance['isreading'].value = false;
       ListenerBox.instance['cpLoaded'].value = false;
       ListenerBox.instance['tts'].value = Mytts8();

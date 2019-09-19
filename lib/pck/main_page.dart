@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import "package:aaa/shaixuan.dart";
+import "main_page_shaixuan.dart";
 import 'package:aaa/data.dart';
-import './pck/data_type_support.dart';
+import 'data_type_support.dart';
 
 class Shujia extends StatefulWidget {
   Shujia({Key key, this.itemonpress}) : super(key: key);

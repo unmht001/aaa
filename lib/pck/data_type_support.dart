@@ -2,6 +2,7 @@ import 'dart:async';
 
 import "dart:math";
 import 'package:aaa/pck/get_string.dart';
+import 'package:aaa/pck/progress.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 
@@ -91,6 +92,10 @@ class BookData {
   MyListener pageLsn;
   MyListener readingLsn;
   Map _mp;
+
+  ProgressValue menuPv=new ProgressValue(0,100);
+  ProgressValue pagePv=new ProgressValue(0,100);
+
 
   String toJson() {
     return json.encode(this._mp);
@@ -264,7 +269,7 @@ class ListenerBox {
 
 class Textsheet extends Chain {
   static const Color hColor = Colors.yellowAccent; //高亮颜色
-  static const Color lColor = Colors.greenAccent; //平常颜色
+  static const Color lColor = Colors.brown; //平常颜色
   Map data = {}; //数据集
 
   Textsheet() : super() {

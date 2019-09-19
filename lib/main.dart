@@ -1,13 +1,11 @@
-import 'package:aaa/data.dart';
-import 'package:aaa/init_fun.dart';
-import 'package:aaa/page2.dart';
-import 'package:aaa/page3.dart';
-import 'package:aaa/page4.dart';
-// import 'package:aaa/pck/get_string.dart';
-import 'package:aaa/pck/tts_helper.dart';
-import 'package:aaa/shujia.dart';
 import 'package:flutter/material.dart';
-import './pck/data_type_support.dart';
+import 'init_fun.dart';
+import 'pck/main_page.dart';
+
+import 'data.dart';
+import 'pck/data_type_support.dart';
+import 'pck/content_page.dart';
+import 'pck/menu_page.dart';
 
 EventGun gun = new EventGun();
 MyListener initok = new MyListener();
@@ -51,11 +49,14 @@ class _MyAppState extends State<MyApp> {
 class MyHomePage extends StatefulWidget {
   MyHomePage({this.refresh});
   final Function refresh;
+
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateMixin {
+class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
+  @override
+  bool get wantKeepAlive => true;
   int _cindex = 0;
   TabController _controller;
   final PageController _pctler = new PageController(initialPage: 0);
@@ -63,6 +64,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return WillPopScope(
         onWillPop: () async {
           if (_lastPressAt == null ||
@@ -74,12 +76,14 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
           }
           return true;
         },
-        child: PageView(controller: _pctler, children: <Widget>[
+        child: PageView(
+          physics: NeverScrollableScrollPhysics(),
+          controller: _pctler, children: <Widget>[
           Scaffold(
               //page 1
-              body: TabBarView(
-                  controller: _controller,
-                  children: <Widget>[Shujia(itemonpress: onShujiaPress), Page2(), Page3(sdkdata: sdkdata), Page4()]),
+              body: TabBarView(controller: _controller,
+                  // children: <Widget>[Shujia(itemonpress: onShujiaPress), Page2(), Page3(sdkdata: sdkdata), Page4()]),
+                  children: <Widget>[Shujia(itemonpress: onShujiaPress), Container(), Container(), Container()]),
               bottomNavigationBar: BottomNavigationBar(
                   type: BottomNavigationBarType.fixed,
                   iconSize: 24.0,
@@ -135,21 +139,15 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
         bk.getmenudata();
       });
   onMenuPress(BookData bk) {
-    bk.pageLsn.afterSetter = () => setState(() {
-          this.widget.refresh();
-        });
+    bk.pageLsn.afterSetter = () => setState(() => this.widget.refresh());
     openpage(bk, page: 2);
-    bk.getpagedata().then((x) {
-      setState(() {});
-    });
+    bk.getpagedata().then((x) => setState(() {}));
   }
 
-  onPagePress(BookData bk) {
+  onPagePress(BookData bk) async {
     this.widget.refresh();
-    if (ListenerBox.instance['bk'].value.selected <= 0)
-      print('readover');
-    else {
-      ListenerBox.instance['bk'].value.selected = ListenerBox.instance['bk'].value.selected - 1;
+    if (ListenerBox.instance['bk'].value.selected > 0) {
+      ListenerBox.instance['bk'].value.selected -= 1;
       (ListenerBox.instance['bk'].value as BookData).getpagedata();
     }
   }
