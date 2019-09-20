@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import "dart:math";
+// import 'package:aaa/pck/content_page.dart';
 import 'package:aaa/pck/get_string.dart';
 import 'package:aaa/pck/progress.dart';
 import 'package:flutter/material.dart';
@@ -75,7 +76,7 @@ class BookData {
   int yuepiao;
 
 // 地址相关
-  String baseUrl;
+  String bookBaseUrl;
   String menuUrl;
   String menuSoupTag;
   String menuPattan;
@@ -93,9 +94,8 @@ class BookData {
   MyListener readingLsn;
   Map _mp;
 
-  ProgressValue menuPv=new ProgressValue(0,100);
-  ProgressValue pagePv=new ProgressValue(0,100);
-
+  ProgressValue menuPv = new ProgressValue(0, 100);
+  ProgressValue pagePv = new ProgressValue(0, 100);
 
   String toJson() {
     return json.encode(this._mp);
@@ -105,12 +105,10 @@ class BookData {
     return this._mp.toString();
   }
 
-  continueReading(){
+  continueReading() {}
 
-  }
-
-  getpagedata() async => await PageOp.getpagedata(this);  
-  getmenudata() async => await  PageOp.getmenudata(this);
+  getpagedata() async => await PageOp.getpagedata(this);
+  getmenudata() async => await PageOp.getmenudata(this);
 
   BookData(
       {this.id = 0,
@@ -129,7 +127,7 @@ class BookData {
       this.shuyouquanxinxiaoxi: false,
       this.tuijianpiao: 0,
       this.yuepiao: 0,
-      this.baseUrl: "",
+      this.bookBaseUrl: "",
       this.menuUrl: "",
       this.menuSoupTag: "",
       this.menuPattan: "",
@@ -142,8 +140,8 @@ class BookData {
     pageLsn.value = "等待页面载入....";
     menuLsn = ListenerBox.instance["menu-" + uid];
     menuLsn.value = "等待目录载入....";
-    readingLsn=ListenerBox.instance["reading-" + uid];
-    readingLsn.value=false;
+    readingLsn = ListenerBox.instance["reading-" + uid];
+    readingLsn.value = false;
 
     this._mp = {
       "id": this.id,
@@ -160,7 +158,7 @@ class BookData {
       "shuyouquanxinxiaoxi": this.shuyouquanxinxiaoxi,
       "tuijianpiao": this.tuijianpiao,
       "yuepiao": this.yuepiao,
-      "baseUrl": this.baseUrl,
+      "baseUrl": this.bookBaseUrl,
       "menuUrl": this.menuUrl,
       "menuSoupTag": this.menuSoupTag,
       "menuPattan": this.menuPattan,
@@ -190,7 +188,7 @@ class BookData {
             shuyouquanxinxiaoxi: mp["shuyouquanxinxiaoxi"] ?? false,
             tuijianpiao: mp["tuijianpiao"] ?? 0,
             yuepiao: mp["yuepiao"] ?? 0,
-            baseUrl: mp["baseUrl"] ?? "",
+            bookBaseUrl: mp["baseUrl"] ?? "",
             menuUrl: mp["menuUrl"] ?? "",
             menuSoupTag: mp["menuSoupTag"] ?? "",
             menuPattan: mp["menuPattan"] ?? "",
@@ -278,9 +276,9 @@ class Textsheet extends Chain {
   } //获取颜色
   Textsheet.fromMap(mp) : this.fromString(mp['document'], mp['highlight']); //获取文字
 
-  Textsheet.fromString(String document, [bool highlight=false]) : super() {
+  Textsheet.fromString(String document, [bool highlight = false]) : super() {
     this.data["document"] = document ?? ""; //文字
-    this.data["highlight"] = highlight ;
+    this.data["highlight"] = highlight;
   }
 
   Color get cl => this.data['highlight'] ? hColor : lColor;
@@ -362,3 +360,103 @@ class AppException implements Exception {
   const AppException([this.message]);
   String toString() => message ?? 'AppException';
 }
+
+class Chapter {
+  String content = "等待加载中";
+  Textsheet contentStart = new Textsheet();
+  getContent() {}
+}
+
+class BookDCS {}
+
+class Book {
+  String name;
+  String bookBaseUrl;
+  num id;
+  String author;
+  
+  List<Chapter> menu = [];
+
+  BookData(id: 1, name: "剑来", bookBaseUrl: "jianlai/", author: "烽火戏诸侯"),
+  Book.from(BookData bookdata);
+  getMenu() {}
+}
+
+class Bookcase {
+  static List<Book> bookStore;
+  static Map<String, Site> siteStore;
+
+  Bookcase._internal() {
+    if (_instance == null) {
+      Bookcase.bookStore = [];
+      Bookcase.siteStore = {};
+    }
+  }
+  factory Bookcase() => _getInstance();
+
+  static Bookcase _instance;
+  static Bookcase _getInstance() => _instance ?? (_instance = Bookcase._internal());
+
+
+  static init(List<BookData> bookdata, Map sitedata, String siteUID) {
+    _getInstance();
+    BookMark.instance;
+    for (var item in bookdata) {
+      bookStore.add(Book.from(item));
+    }
+    for (var item in sitedata.keys) {
+      siteStore[item] = Site.fromMap(sitedata[item]);
+    }
+    BookMark.currentSite=siteStore[siteUID];
+    BookMark.currentBook=bookStore[0];
+  }
+}
+
+class Site {
+  String siteName;
+  String siteBaseUrl;
+  String siteUID;
+  String menuUrl;
+  String menuSoupTag;
+  String menuPattan;
+  String siteCharset;
+  String contentSoupTap;
+  String contentPatten;
+  Site.fromMap(Map mp) {
+    this.siteName = mp["siteName"];
+    this.siteBaseUrl = mp["siteBaseUrl"];
+    this.siteUID = mp["siteUID"];
+    this.menuUrl = mp["menuUrl"];
+    this.menuSoupTag = mp["menuSoupTag"];
+    this.menuPattan = mp["menuPattan"];
+    this.siteCharset = mp["siteCharset"];
+    this.contentSoupTap = mp["contentSoupTap"];
+    this.contentPatten = mp["contentPatten"];
+  }
+}
+
+class BookMark {
+  static Book currentBook;
+  static Chapter currentChapter;
+  static double menuOffset;
+  static double contentOffset;
+  static Site currentSite;
+
+  BookMark._internal();
+  factory BookMark() => _getInstance();
+
+  static BookMark _instance;
+  static BookMark _getInstance() => _instance ?? (_instance = BookMark._internal());
+  static get instance => _getInstance();
+}
+
+// ywXSyXTKVO
+// RrnyYWAzzT
+// xAMgaXwYoL
+// dwmuEMQmPw
+// BkXSEJlnaM
+// altdlfEtGl
+// LVHOSKvvCb
+// cMqCQqtlEQ
+// BQHNPOKrzd
+// JoGeGWNgUc

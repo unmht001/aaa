@@ -105,105 +105,33 @@ class StateInit {
 
   StateInit._internal() {
     if (StateInit._instance == null) {
-      var bk1 = BookData(
-        id: 1,
-        name: "剑来",
-        baseUrl: "http://www.shumil.co/jianlai/",
-        menuUrl: "index.html",
-        menuSoupTag: "div.content",
-        menuPattan: "(<li.+?/li>)",
-        siteCharset: 'gbk',
-        contentPatten: "</div>[^>]+?(<p>[\\s\\S]+?</p>)",
-        contentSoupTap: '#content',
-        author: "烽火戏诸侯",
-        state: "连载",
-        progress: "已读到最新章节",
-        gengxintixing: true,
-        shuyouquanxinxiaoxi: true,
-      );
-      var bk2 = BookData(
-        id: 2,
-        name: "还是地球人狠",
-        baseUrl: "http://www.shumil.co/huanshidiqiurenhen/",
-        menuUrl: "index.html",
-        menuSoupTag: "div.content",
-        menuPattan: "(<li.+?/li>)",
-        siteCharset: 'gbk',
-        contentPatten: "</div>[^>]+?(<p>[\\s\\S]+?</p>)",
-        contentSoupTap: '#content',
-        author: "不知道",
-        state: "连载",
-        progress: "已读到最新章节",
-        gengxintixing: true,
-        shuyouquanxinxiaoxi: true,
-      );
-      var bk3 = BookData(
-        id: 3,
-        name: "星辰之主",
-        baseUrl: "http://www.shumil.co/xingchenzhizhu/",
-        menuUrl: "index.html",
-        menuSoupTag: "div.content",
-        menuPattan: "(<li.+?/li>)",
-        siteCharset: 'gbk',
-        contentPatten: "</div>[^>]+?(<p>[\\s\\S]+?</p>)",
-        contentSoupTap: '#content',
-        author: "减肥专家",
-        state: "连载",
-        progress: "已读到最新章节",
-        gengxintixing: true,
-        shuyouquanxinxiaoxi: true,
-      );
-      var bk4 = BookData(
-        id: 4,
-        name: "黎明之剑",
-        baseUrl: "http://www.shumil.co/limingzhijian/",
-        menuUrl: "index.html",
-        menuSoupTag: "div.content",
-        menuPattan: "(<li.+?/li>)",
-        siteCharset: 'gbk',
-        contentPatten: "</div>[^>]+?(<p>[\\s\\S]+?</p>)",
-        contentSoupTap: '#content',
-        author: "大眼珠子",
-        state: "连载",
-        progress: "已读到最新章节",
-        gengxintixing: true,
-        shuyouquanxinxiaoxi: true,
-      );
-      var bk5 = BookData(
-        id: 5,
-        name: "第一序列",
-        baseUrl: "http://www.shumil.co/dixulie/",
-        menuUrl: "index.html",
-        menuSoupTag: "div.content",
-        menuPattan: "(<li.+?/li>)",
-        siteCharset: 'gbk',
-        contentPatten: "</div>[^>]+?(<p>[\\s\\S]+?</p>)",
-        contentSoupTap: '#content',
-        author: "不知道",
-        state: "连载",
-        progress: "已读到最新章节",
-        gengxintixing: true,
-        shuyouquanxinxiaoxi: true,
-      );
-        var bk6 = BookData(
-        id: 6,
-        name: "明朝败家子",
-        baseUrl: "http://www.shumil.co/mingchaobaijiazi/",
-        menuUrl: "index.html",
-        menuSoupTag: "div.content",
-        menuPattan: "(<li.+?/li>)",
-        siteCharset: 'gbk',
-        contentPatten: "</div>[^>]+?(<p>[\\s\\S]+?</p>)",
-        contentSoupTap: '#content',
-        author: "不知道",
-        state: "连载",
-        progress: "已读到最新章节",
-        gengxintixing: true,
-        shuyouquanxinxiaoxi: true,
-      );
-      
-      ListenerBox.instance['bk'].value = bk1;
-      ListenerBox.instance['bks'].value = [bk1, bk2, bk3, bk4, bk5,bk6];
+      var bks = [
+        BookData(id: 1, name: "剑来", bookBaseUrl: "jianlai/", author: "烽火戏诸侯"),
+        BookData(id: 2, name: "还是地球人狠", bookBaseUrl: "huanshidiqiurenhen/",  author: "不知道"),
+        BookData(id: 3, name: "星辰之主", bookBaseUrl: "xingchenzhizhu/",  author: "减肥专家"),
+        BookData(id: 4, name: "黎明之剑", bookBaseUrl: "limingzhijian/",  author: "大眼珠子"),
+        BookData(id: 5, name: "第一序列", bookBaseUrl: "dixulie/",  author: "不知道"),
+        BookData(id: 6, name: "明朝败家子", bookBaseUrl: "mingchaobaijiazi/",  author: "不知道")
+      ];
+
+      Map sitedata = {
+        "ywXSyXTKVO": {
+          "siteUID":"ywXSyXTKVO",
+          "siteName":"书迷楼",
+          "siteBaseUrl": "http://www.shumil.co/",
+          "menuUrl": "index.html",
+          "menuSoupTag": "div.content",
+          "menuPattan": "(<li.+?/li>)",
+          "siteCharset": 'gbk',
+          "contentPatten": "</div>[^>]+?(<p>[\\s\\S]+?</p>)",
+          "contentSoupTap": '#content',
+        }
+      };
+
+      Bookcase.init(bks,sitedata,"ywXSyXTKVO");
+
+      ListenerBox.instance['bk'].value = bks[0];
+      ListenerBox.instance['bks'].value = bks;
       ListenerBox.instance['isreading'].value = false;
       ListenerBox.instance['cpLoaded'].value = false;
       ListenerBox.instance['tts'].value = Mytts8();

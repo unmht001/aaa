@@ -57,21 +57,32 @@ class _ShujiaState extends State<Shujia> with SingleTickerProviderStateMixin {
             alignment: Alignment.center,
             child: TabBarView(controller: _p1ctl, children: <Widget>[
               Container(
-                  alignment: Alignment.center,
-                  child: ListView(
-                      children: getCards(
-                          ListenerBox.instance['bks'].value is List ? ListenerBox.instance['bks'].value : [],
-                          context,
-                          itemonpress))),
+                alignment: Alignment.center,
+                child: ListView.builder(
+                  itemCount: Bookcase.bookStore.length,
+                  itemBuilder: getCard,
+                ),
+                // child: ListView(
+                //     children: getCards(
+                //         ListenerBox.instance['bks'].value is List ? ListenerBox.instance['bks'].value : [],
+                //         context,
+                //         itemonpress)),
+              ),
               Center(child: Text("关注"))
             ])));
   }
 }
 
-List<Widget> getCards(List bookList, BuildContext context, Function itemonpress) =>
-    bookList.map((bk) => getCard(bk as BookData, context, actn: () => itemonpress(bk))).toList();
+// List<Widget> getCards(List bookList, BuildContext context, Function itemonpress) =>
+//     bookList.map((bk) => getCard(bk as BookData, context, actn: () => itemonpress(bk))).toList();
 
-Widget getCard(BookData book, BuildContext context, {VoidCallback actn}) {
+
+
+
+Widget getCard(BuildContext context, int index, {BookData book, VoidCallback actn}) {
+  var site=BookMark.currentSite;
+  var bk=BookMark.currentBook;
+  
   return FlatButton(
       onPressed: actn,
       child: Container(

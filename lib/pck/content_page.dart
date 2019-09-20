@@ -37,6 +37,8 @@ class _ContentPageState extends State<ContentPage> with AutomaticKeepAliveClient
   final _ctr = new ScrollController(keepScrollOffset: true);
   _ContentPageState({this.book});
   final BookData book;
+ 
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -91,10 +93,7 @@ class _ContentPageState extends State<ContentPage> with AutomaticKeepAliveClient
 
   @override
   void initState() {
-    super.initState();
-    this.book.pageLsn.afterSetter = () {
-      if (this.mounted) setState(() {});
-    };
+    super.initState();    
     this.widget.pst.currentHL = this.book.pageLsn.value = this.book.pageLsn.value is String
         ? Textsheet.getTextsheetChain(this.widget.lsn.value)
         : this.book.pageLsn.value as Textsheet;
@@ -103,6 +102,8 @@ class _ContentPageState extends State<ContentPage> with AutomaticKeepAliveClient
     ListenerBox.instance['cpLoaded'].afterSetter = () {
       if (book.readingLsn.value) startReading();
     };
+    // this.widget.book.getpagedata().then((x) => setState(() {}));
+
   }
 
   continueReading() async {
@@ -137,7 +138,7 @@ class _ContentPageState extends State<ContentPage> with AutomaticKeepAliveClient
     this.widget.tts.stop();
     setState(() {});
   }
-
+  
   refreshpage() {
     book.pageLsn.afterSetter = () {};
     book.pageLsn.value = this.widget.pst.currentHL = book.pageLsn.value is String
@@ -145,6 +146,7 @@ class _ContentPageState extends State<ContentPage> with AutomaticKeepAliveClient
         : book.pageLsn.value as Textsheet;
     book.pageLsn.afterSetter = refreshpage;
     book.pageLsn.value.highLight();
+    if(this.mounted) setState(() {}); 
   }
 
   Widget textsheetToWidget(Textsheet sss) {

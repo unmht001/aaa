@@ -32,7 +32,7 @@ class PageOp {
       );
 
       lsn.value = "等待页面载入....";
-      var response = await dio.get(book.baseUrl + book.menuLsn.value[book.selected][0]);
+      var response = await dio.get(book.bookBaseUrl + book.menuLsn.value[book.selected][0]);
       if (response.statusCode == 200) {
         var soup = Beautifulsoup(charsetS(response, charset: book.siteCharset).toString());
         var _ss = soup.find(id: book.contentSoupTap);
@@ -62,7 +62,7 @@ class PageOp {
         BaseOptions(contentType: ContentType.html, responseType: ResponseType.bytes),
       );
       lsn.value = "等待目录载入....";
-      Response response = await dio.get(book.baseUrl + book.menuUrl);
+      Response response = await dio.get(book.bookBaseUrl + book.menuUrl);
 
       if (response.statusCode == 200) {
         var soup = Beautifulsoup(charsetS(response, charset: book.siteCharset).toString());

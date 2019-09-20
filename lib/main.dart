@@ -27,28 +27,17 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     if (!initok.value) {
-      initok.afterSetter = () {
-        setState(() {});
-      };
+      initok.afterSetter = () => setState(() {});
       return MaterialApp(
-          theme: ThemeData(primarySwatch: Colors.blue), home: Scaffold(body: Container(child: Text(loadingtext))));
+          theme: ThemeData(primarySwatch: Colors.blue), home: Scaffold(body: Center(child: Text(loadingtext))));
     } else {
-      return MaterialApp(
-          theme: ThemeData(primarySwatch: Colors.blue),
-          home: MyHomePage(
-            refresh: refreshWholePage,
-          ));
+      return MaterialApp(theme: ThemeData(primarySwatch: Colors.blue), home: MyHomePage());
     }
-  }
-
-  refreshWholePage() {
-    setState(() {});
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({this.refresh});
-  final Function refresh;
+  MyHomePage();
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -76,13 +65,11 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
           }
           return true;
         },
-        child: PageView(
-          physics: NeverScrollableScrollPhysics(),
-          controller: _pctler, children: <Widget>[
+        child: PageView(physics: NeverScrollableScrollPhysics(), controller: _pctler, children: <Widget>[
           Scaffold(
               //page 1
-              body: TabBarView(controller: _controller,
-                  // children: <Widget>[Shujia(itemonpress: onShujiaPress), Page2(), Page3(sdkdata: sdkdata), Page4()]),
+              body: TabBarView(
+                  controller: _controller,
                   children: <Widget>[Shujia(itemonpress: onShujiaPress), Container(), Container(), Container()]),
               bottomNavigationBar: BottomNavigationBar(
                   type: BottomNavigationBarType.fixed,
@@ -124,28 +111,21 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
   }
 
   void openpage(BookData bk, {int page: 1}) {
-    bk.menuLsn.afterSetter = () => setState(() {});
-    // PageOp.getmenudata(bk);
     this._pctler.animateToPage(page, duration: Duration(milliseconds: 300), curve: Curves.ease);
   }
 
-  onShujiaPress(BookData bk) => setState(() {
-        this.widget.refresh();
-        ListenerBox.instance["bk"].afterSetter = () {};
-        ListenerBox.instance["bk"].value.readingLsn.value = false;
-        ListenerBox.instance["bk"].value = bk;
-        bk.menuLsn.afterSetter = () => setState(() {});
-        openpage(bk, page: 1);
-        bk.getmenudata();
-      });
+  onShujiaPress(BookData bk) {
+    ListenerBox.instance["bk"].afterSetter = () {};
+    ListenerBox.instance["bk"].value.readingLsn.value = false;
+    ListenerBox.instance["bk"].value = bk;
+    openpage(bk, page: 1);
+  }
+
   onMenuPress(BookData bk) {
-    bk.pageLsn.afterSetter = () => setState(() => this.widget.refresh());
     openpage(bk, page: 2);
-    bk.getpagedata().then((x) => setState(() {}));
   }
 
   onPagePress(BookData bk) async {
-    this.widget.refresh();
     if (ListenerBox.instance['bk'].value.selected > 0) {
       ListenerBox.instance['bk'].value.selected -= 1;
       (ListenerBox.instance['bk'].value as BookData).getpagedata();
@@ -155,3 +135,6 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
 //19.09.19
 //TODO: 一个页面阅读后,能转到下一个页面. 现在可以跳转,但在跳转的时候出了BUG,  现在做到了30%
 //TODO: 自动加载前三后三共七页.这个功能还没开始做
+
+//19.09.20
+//TODO: APP 分层       底层访问 -- 数据结构 --  界面显示    , 重写 APP架构以解决 19.09.19的问题.
