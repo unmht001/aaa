@@ -1,8 +1,15 @@
 import "package:flutter/material.dart";
+
 class ProgressValue {
   double _value = 0.0;
   num max = 100.0;
-  double offset=0;
+
+  double _offset = 1.0;
+  double get offset => _offset;
+  set offset(double offset) {
+    _offset = offset < 0 ? 0 : offset > 1 ? 1.0 : offset;
+  }
+
   double get value => _value;
   set value(num v) => _value = (v == null || v < 0) ? 0.0 : v > max ? max : v.toDouble();
   ProgressValue([num v, this.max])
@@ -19,11 +26,11 @@ class ProgressDragger extends StatefulWidget {
   final Animation<Color> valueColor;
   final double heigh;
   final double width;
-  final ProgressValue value;
+  final ScrollController controller;
   final Color color;
   final double padding;
   final gk = GlobalKey();
-  ProgressDragger(this.value,
+  ProgressDragger(this.controller,
       {Key key,
       this.onTapUp,
       this.onVerticalDragUpdate,
@@ -39,9 +46,10 @@ class ProgressDragger extends StatefulWidget {
 }
 
 class _ProgressDraggerState extends State<ProgressDragger> with AutomaticKeepAliveClientMixin {
-
   @override
   bool get wantKeepAlive => true;
+  ScrollPosition get p => this.widget.controller.position;
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -52,22 +60,20 @@ class _ProgressDraggerState extends State<ProgressDragger> with AutomaticKeepAli
         color: this.widget.color,
         decoration: this.widget.decoration,
         child: GestureDetector(
-            onTapUp: (detail) => setState(() {
-              if (this.mounted){
-                  this.widget.value.value = detail.localPosition.dx *
-                      this.widget.value.max /
-                      (context.size.width - (this.widget.padding ?? 0) * 2);
-                  if (this.widget.onTapUp != null) this.widget.onTapUp(detail);}
-                }),
-            onVerticalDragUpdate: (detail) => setState(() {
-              if (this.mounted){
-                  this.widget.value.value = detail.localPosition.dx *
-                      this.widget.value.max /
-                      (context.size.width - (this.widget.padding ?? 0) * 2);
-                  if (this.widget.onVerticalDragUpdate != null) this.widget.onVerticalDragUpdate(detail);}
-                }),
+            onTapUp: (detail) => setState(() => this.widget.controller.animateTo(
+                (detail.localPosition.dx / (context.size.width - (this.widget.padding ?? 0) * 2)) *
+                        (p.maxScrollExtent - p.minScrollExtent) +
+                    p.minScrollExtent,
+                duration: Duration(milliseconds: 500),
+                curve: Curves.ease)),
+            onVerticalDragUpdate: (detail) => setState(() => this.widget.controller.animateTo(
+                (detail.localPosition.dx / (context.size.width - (this.widget.padding ?? 0) * 2)) *
+                        (p.maxScrollExtent - p.minScrollExtent) +
+                    p.minScrollExtent,
+                duration: Duration(milliseconds: 500),
+                curve: Curves.ease)),
             child: new LinearProgressIndicator(
-                value: this.widget.value.value / this.widget.value.max,
+                value: (p.pixels - p.minScrollExtent) / (p.maxScrollExtent - p.minScrollExtent),
                 backgroundColor: Colors.yellow,
                 valueColor: this.widget.valueColor)));
   }

@@ -107,8 +107,10 @@ class BookData {
 
   continueReading() {}
 
-  getpagedata() async => await PageOp.getpagedata(this);
-  getmenudata() async => await PageOp.getmenudata(this);
+  // getpagedata() async => await PageOp.getpagedata(this);
+  // getmenudata() async => await PageOp.getmenudata(this);
+  getpagedata() async => null;
+  getmenudata() async => null;
 
   BookData(
       {this.id = 0,
@@ -330,6 +332,32 @@ class Blockcelldata {
   Blockcelldata(this.tt, this.count, {this.ftsz: 13, this.tcolor: Colors.white});
 }
 
+mixin RefreshProviderSTF on StatefulWidget {
+  final List<Function> _lf = [() {}];
+
+  refresh() {
+    _lf[0]();
+  }
+}
+mixin RefreshProviderSate<T extends RefreshProviderSTF> on State<T> {
+  final List<Function> _lf = [() {}];
+
+  @override
+  void initState() {
+    super.initState();
+    this.widget._lf[0] = () => setState(() {});
+  }
+
+  @override
+  void dispose() {
+    this.widget._lf[0] = () {};
+    super.dispose();
+  }
+
+  @override
+  setState(fn) => this.mounted ? super.setState(fn) : null;
+}
+
 //todo: 写一个dart 的 类似 python 的 async.event
 class EventGun {
   bool isFired = false;
@@ -364,6 +392,9 @@ class AppException implements Exception {
 class Chapter {
   String content = "等待加载中";
   Textsheet contentStart = new Textsheet();
+  String chapterUrl;
+  String chapterName;
+  Chapter(this.chapterUrl,this.chapterName);
   getContent() {}
 }
 
@@ -371,44 +402,58 @@ class BookDCS {}
 
 class Book {
   String name;
-  String bookBaseUrl;
+  // String bookBaseUrl;
   num id;
   String author;
-  
+  String pic;
+  String progress;
+  String state;
+  String lastupdatetime;
+  String lastupdatepagename;
+  String uid;
+  // String site;
+
   List<Chapter> menu = [];
 
-  BookData(id: 1, name: "剑来", bookBaseUrl: "jianlai/", author: "烽火戏诸侯"),
-  Book.from(BookData bookdata);
-  getMenu() {}
+  Book(this.id, this.name, this.author, this.uid);
+  Book.fromMap(Map bookdata) : this(bookdata["id"], bookdata["name"], bookdata["author"], bookdata["uid"]);
+  getMenu() async
+    =>await PageOp.getmenudata(this);
+
+ 
+  BookState get getBookstate =>BookMark.bookState[this.uid];
+  Site get getSite=>Bookcase.siteStore[ getBookstate.siteString];
+  String get getMenuUrl=> getSite.siteBaseUrl+getSite.bookBaseUrls[uid]+getSite.menuUrl;
+  double get getMenuPv=>getBookstate.menupv;
+      setMenuPv()=>getBookstate.menupv
+  
 }
 
 class Bookcase {
-  static List<Book> bookStore;
-  static Map<String, Site> siteStore;
+  static Map<String, Book> bookStore = {};
+  static Map<String, Site> siteStore = {};
 
-  Bookcase._internal() {
-    if (_instance == null) {
-      Bookcase.bookStore = [];
-      Bookcase.siteStore = {};
-    }
-  }
+  Bookcase._internal();
   factory Bookcase() => _getInstance();
 
   static Bookcase _instance;
   static Bookcase _getInstance() => _instance ?? (_instance = Bookcase._internal());
 
-
-  static init(List<BookData> bookdata, Map sitedata, String siteUID) {
+  static init(List<Map> bookdata, Map sitedata, String siteUID) {
     _getInstance();
     BookMark.instance;
-    for (var item in bookdata) {
-      bookStore.add(Book.from(item));
-    }
-    for (var item in sitedata.keys) {
-      siteStore[item] = Site.fromMap(sitedata[item]);
-    }
-    BookMark.currentSite=siteStore[siteUID];
-    BookMark.currentBook=bookStore[0];
+    for (var item in sitedata.keys) siteStore[item] = Site.fromMap(sitedata[item]);
+
+    for (var item in bookdata) addBook(item);
+
+    BookMark.currentBook = bookStore[bookdata[0]["uid"]];
+  }
+
+  static addBook(Map mp) {
+    var _bk = Book.fromMap(mp);
+    bookStore[mp["uid"]] = _bk;
+    BookMark.bookState[_bk.uid] = BookState(_bk, mp["site"]);
+    siteStore[mp["site"]].bookBaseUrls[mp["uid"]] = mp["bookBaseUrl"];
   }
 }
 
@@ -433,14 +478,25 @@ class Site {
     this.contentSoupTap = mp["contentSoupTap"];
     this.contentPatten = mp["contentPatten"];
   }
+  Map<String, String> bookBaseUrls = {};
+}
+
+class BookState {
+  String siteString;
+  Book book;
+  double menupv = 1.0;
+  static double menuOffset;
+  double pagepv = 1.0;
+  static double contentOffset;
+  static Chapter currentChapter;
+  int currentChapterIndex;
+  BookState(this.book, this.siteString);
 }
 
 class BookMark {
   static Book currentBook;
-  static Chapter currentChapter;
-  static double menuOffset;
-  static double contentOffset;
-  static Site currentSite;
+
+  static Map<String, BookState> bookState = {};
 
   BookMark._internal();
   factory BookMark() => _getInstance();
@@ -448,15 +504,10 @@ class BookMark {
   static BookMark _instance;
   static BookMark _getInstance() => _instance ?? (_instance = BookMark._internal());
   static get instance => _getInstance();
+  static MyListener menuLoadedLsn=MyListener();
+  static MyListener pageLoadedLsn=MyListener();
 }
 
-// ywXSyXTKVO
-// RrnyYWAzzT
-// xAMgaXwYoL
-// dwmuEMQmPw
-// BkXSEJlnaM
-// altdlfEtGl
-// LVHOSKvvCb
 // cMqCQqtlEQ
 // BQHNPOKrzd
 // JoGeGWNgUc

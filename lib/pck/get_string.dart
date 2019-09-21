@@ -54,36 +54,36 @@ class PageOp {
     return true;
   }
 
-  static getmenudata(BookData book) async {
-    print(book.uid);
-    var lsn = book.menuLsn;
+  static getmenudata(Book book) async {
+    
+    var _ret;
     try {
       Dio dio = new Dio(
         BaseOptions(contentType: ContentType.html, responseType: ResponseType.bytes),
       );
-      lsn.value = "等待目录载入....";
-      Response response = await dio.get(book.bookBaseUrl + book.menuUrl);
+      _ret = "等待目录载入....";
+      
+      Response response = await dio.get(book.getMenuUrl);
 
       if (response.statusCode == 200) {
-        var soup = Beautifulsoup(charsetS(response, charset: book.siteCharset).toString());
-        var s1 = soup(book.menuSoupTag);
-        var s2 = RegExp(book.menuPattan, multiLine: true).allMatches(s1.outerHtml);
+        var soup = Beautifulsoup(charsetS(response, charset: book.getSite.siteCharset).toString());
+        var s1 = soup(book.getSite.menuSoupTag); 
+        var s2 = RegExp(book.getSite.menuPattan, multiLine: true).allMatches(s1.outerHtml);
         var s12 = RegExp("<a\\shref=\"(.+?)\">(.+?)</a>", multiLine: true);
         var _r;
 
         assert(s2 != null, "没有找到本书");
         assert(s2.length != 0, "章节获取失败");
 
-        lsn.value = s2
+        _ret = s2
             .map((vs) => [(_r = s12.firstMatch(vs.group(1).toString())).group(1).toString(), _r.group(2).toString()])
             .toList();
       } else
-        lsn.value = "失败代码: ${response.statusCode}.";
+        _ret = "失败代码: ${response.statusCode}.";
     } catch (e) {
-      lsn.value = e.toString();
-      return false;
+      _ret = e.toString();
+      
     }
-    // print(book.menuLsn.value.toString());
-    return true;
+    return _ret;
   }
 }

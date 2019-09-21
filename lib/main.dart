@@ -30,9 +30,8 @@ class _MyAppState extends State<MyApp> {
       initok.afterSetter = () => setState(() {});
       return MaterialApp(
           theme: ThemeData(primarySwatch: Colors.blue), home: Scaffold(body: Center(child: Text(loadingtext))));
-    } else {
+    } else
       return MaterialApp(theme: ThemeData(primarySwatch: Colors.blue), home: MyHomePage());
-    }
   }
 }
 
@@ -46,84 +45,72 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
   @override
   bool get wantKeepAlive => true;
-  int _cindex = 0;
-  TabController _controller;
-  final PageController _pctler = new PageController(initialPage: 0);
+  PageController _pctler;
   DateTime _lastPressAt;
+  checkOnWillPop() {
+    var f = (_lastPressAt == null ||
+            _pctler.page > _pctler.initialPage ||
+            DateTime.now().difference(_lastPressAt) > Duration(seconds: 1))
+        ? false
+        : true;
+
+    _lastPressAt = DateTime.now();
+    if (!f) _pctler.previousPage(duration: Duration(milliseconds: 300), curve: Curves.ease);
+    return f;
+  }
 
   @override
   Widget build(BuildContext context) {
+    var _tbs = [
+      PageOne(itemonpress: onShujiaPress),
+      MenuPage(itemonpress: onMenuPress),
+      ContentPage(pageReadOverAction: onPagePress)
+    ];
     super.build(context);
     return WillPopScope(
-        onWillPop: () async {
-          if (_lastPressAt == null ||
-              _pctler.page > _pctler.initialPage ||
-              DateTime.now().difference(_lastPressAt) > Duration(seconds: 1)) {
-            _lastPressAt = DateTime.now();
-            _pctler.previousPage(duration: Duration(milliseconds: 300), curve: Curves.ease);
-            return false;
-          }
-          return true;
-        },
-        child: PageView(physics: NeverScrollableScrollPhysics(), controller: _pctler, children: <Widget>[
-          Scaffold(
-              //page 1
-              body: TabBarView(
-                  controller: _controller,
-                  children: <Widget>[Shujia(itemonpress: onShujiaPress), Container(), Container(), Container()]),
-              bottomNavigationBar: BottomNavigationBar(
-                  type: BottomNavigationBarType.fixed,
-                  iconSize: 24.0,
-                  currentIndex: _cindex,
-                  fixedColor: Colors.red,
-                  items: navs(),
-                  onTap: (int x) => setState(() {
-                        _cindex = x;
-                        _controller.index = x;
-                      }))),
-          Scaffold(
-              //page 2
-              body: MenuPage(itemonpress: onMenuPress)),
-          Scaffold(
-              //page 3
-              body: ContentPage(pageReadOverAction: onPagePress))
-        ]));
-  }
-
-  List<BottomNavigationBarItem> navs() {
-    List<BottomNavigationBarItem> _r = [];
-    for (var x in (ListenerBox.instance['navs'].inited ? ListenerBox.instance['navs'].value : []))
-      _r.add(BottomNavigationBarItem(title: Text(x.tt), icon: Icon(x.icon)));
-    return _r;
+        onWillPop: () async => checkOnWillPop(),
+        child: PageView.builder(
+            physics: NeverScrollableScrollPhysics(),
+            controller: _pctler,
+            itemCount: _tbs.length,
+            itemBuilder: (context, index) => _tbs[index]));
   }
 
   @override
   void dispose() {
-    this._controller.dispose();
+    this._pctler.dispose();
     super.dispose();
   }
 
   @override
   void initState() {
-    this._controller = TabController(
-        vsync: this, length: ListenerBox.instance['navs'].inited ? ListenerBox.instance['navs'].value.length : 0);
     super.initState();
+    this._pctler = PageController(initialPage: 0);
   }
 
-  void openpage(BookData bk, {int page: 1}) {
-    this._pctler.animateToPage(page, duration: Duration(milliseconds: 300), curve: Curves.ease);
-  }
+  void openpage(Book bk, {int page: 1}) =>
+      this._pctler.animateToPage(page, duration: Duration(milliseconds: 300), curve: Curves.ease);
 
-  onShujiaPress(BookData bk) {
-    ListenerBox.instance["bk"].afterSetter = () {};
-    ListenerBox.instance["bk"].value.readingLsn.value = false;
-    ListenerBox.instance["bk"].value = bk;
+  onShujiaPress(Book bk) {
+    if (bk != BookMark.currentBook) {
+      var _pv = BookMark.currentBook.getMenuPv;
+      _pv.offset = _pv.value / _pv.max;
+      BookMark.currentBook = bk;
+      _pv = bk.getMenuPv;
+      _pv.value=_pv.offset*_pv.max;
+      bk.getMenu().then((x) {
+        if (x is List) {
+          bk.menu = x.map((a) => Chapter(a[0], a[1])).toList();
+        } else
+          print(x);
+        BookMark.menuLoadedLsn.value = true;
+      });
+    }
+
     openpage(bk, page: 1);
   }
 
-  onMenuPress(BookData bk) {
-    openpage(bk, page: 2);
-  }
+  onMenuPress(Book bk) => openpage(bk, page: 2);
 
   onPagePress(BookData bk) async {
     if (ListenerBox.instance['bk'].value.selected > 0) {

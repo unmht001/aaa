@@ -62,7 +62,7 @@ class _ContentPageState extends State<ContentPage> with AutomaticKeepAliveClient
               // 边界半径（`borderRadius`）属性，圆角的边界半径。
               borderRadius: BorderRadius.all(Radius.circular(10.0)),
               child: ProgressDragger(
-                pv,
+                _ctr,
                 color: Colors.yellow,
                 onTapUp: (d) {
                   _ctr.animateTo(pv.value, duration: Duration(milliseconds: 500), curve: Curves.ease);
