@@ -332,16 +332,34 @@ class Blockcelldata {
   Blockcelldata(this.tt, this.count, {this.ftsz: 13, this.tcolor: Colors.white});
 }
 
+class StateStore {
+  bool canSet = true;
+  bool _doing = false;
+  bool get doing => _doing;
+  List<Future> doingSetAfter = [];
+  set doing(bool value) {
+    _doing = value;
+    if (doingSetAfter.isNotEmpty && value)
+      doingSetAfter[0].then((x) {
+        doingSetAfter.removeAt(0);
+      }).then((x) {
+        doing = value;
+      });
+  }
+
+  List<Function> action = [];
+}
+
 mixin RefreshProviderSTF on StatefulWidget {
   final List<Function> _lf = [() {}];
-
+  final StateStore state = new StateStore();
   refresh() {
     _lf[0]();
   }
 }
-mixin RefreshProviderSate<T extends RefreshProviderSTF> on State<T> {
+mixin RefreshProviderState<T extends RefreshProviderSTF> on State<T> {
   final List<Function> _lf = [() {}];
-
+  static int _count = 0;
   @override
   void initState() {
     super.initState();
@@ -354,8 +372,54 @@ mixin RefreshProviderSate<T extends RefreshProviderSTF> on State<T> {
     super.dispose();
   }
 
+  _setState() async {
+    print("start setState ${this.widget.state.action.length} " );
+    try {
+      RefreshProviderState._count += 1;
+      print(RefreshProviderState._count);
+    } catch (e) {
+      print(e);
+    }
+
+    if (this.widget.state.action.isNotEmpty) {
+      if (!this.widget.state.doing) {
+        this.widget.state.doing = false;
+        await Future.value(this.widget.state.action[0]());
+        this.widget.state.action.removeAt(0);
+        this.widget.state.doing = true;
+        print("waiting:"+this.widget.state.action.length.toString());
+        await _setState();
+      } else {
+        var c = EventGun();
+        this.widget.state.doingSetAfter.add(Future(()async {
+          c.fire(true);
+        }));
+        var _rr= await  c.waitFire();
+
+        if (_rr){
+          await _setState();
+        }
+       
+      }
+    }
+    else{
+      if (this.mounted) super.setState((){});
+    }
+  }
+
   @override
-  setState(fn) => this.mounted ? super.setState(fn) : null;
+  setState(fn) {
+    this.widget.state.action.add(fn);
+    if (this.widget.state.canSet) {
+      this.widget.state.canSet = false;
+      _setState().then((x) {
+        this.widget.state.canSet = true;
+      });
+    }else
+    {
+      print("已经开始setState,此次加入等待");
+    }
+  }
 }
 
 //todo: 写一个dart 的 类似 python 的 async.event
@@ -394,7 +458,7 @@ class Chapter {
   Textsheet contentStart = new Textsheet();
   String chapterUrl;
   String chapterName;
-  Chapter(this.chapterUrl,this.chapterName);
+  Chapter(this.chapterUrl, this.chapterName);
   getContent() {}
 }
 
@@ -417,16 +481,14 @@ class Book {
 
   Book(this.id, this.name, this.author, this.uid);
   Book.fromMap(Map bookdata) : this(bookdata["id"], bookdata["name"], bookdata["author"], bookdata["uid"]);
-  getMenu() async
-    =>await PageOp.getmenudata(this);
+  getMenu() async => await PageOp.getmenudata(this);
 
- 
-  BookState get getBookstate =>BookMark.bookState[this.uid];
-  Site get getSite=>Bookcase.siteStore[ getBookstate.siteString];
-  String get getMenuUrl=> getSite.siteBaseUrl+getSite.bookBaseUrls[uid]+getSite.menuUrl;
-  double get getMenuPv=>getBookstate.menupv;
-      setMenuPv()=>getBookstate.menupv
-  
+  BookState get getBookstate => BookMark.bookState[this.uid];
+  Site get getSite => Bookcase.siteStore[getBookstate.siteString];
+  String get getMenuUrl => getSite.siteBaseUrl + getSite.bookBaseUrls[uid] + getSite.menuUrl;
+  double get getMenuPv => getBookstate.menupv;
+  // setMenuPv()=>getBookstate.menupv
+
 }
 
 class Bookcase {
@@ -494,7 +556,17 @@ class BookState {
 }
 
 class BookMark {
-  static Book currentBook;
+  static Function currentBookAfterSetForMenu;
+  static Function currentBookAfterSetForPage;
+  static Book _currentBook;
+  static Book get currentBook => _currentBook;
+  static set currentBook(Book bk) {
+    _currentBook = bk;
+    (currentBookAfterSetForMenu ?? () {})();
+    (currentBookAfterSetForPage ?? () {})();
+  }
+
+  static Function menuPageRefresher;
 
   static Map<String, BookState> bookState = {};
 
@@ -504,8 +576,8 @@ class BookMark {
   static BookMark _instance;
   static BookMark _getInstance() => _instance ?? (_instance = BookMark._internal());
   static get instance => _getInstance();
-  static MyListener menuLoadedLsn=MyListener();
-  static MyListener pageLoadedLsn=MyListener();
+  static MyListener menuLoadedLsn = MyListener();
+  static MyListener pageLoadedLsn = MyListener();
 }
 
 // cMqCQqtlEQ

@@ -13,7 +13,7 @@ class PageOne extends StatefulWidget with RefreshProviderSTF {
   _PageOneState createState() => _PageOneState();
 }
 
-class _PageOneState extends State<PageOne> with TickerProviderStateMixin, RefreshProviderSate {
+class _PageOneState extends State<PageOne> with TickerProviderStateMixin, RefreshProviderState {
   TabController _p1ctl;
   TabController _controller;
   @override
@@ -91,10 +91,7 @@ class _PageOneState extends State<PageOne> with TickerProviderStateMixin, Refres
     Book bk = Bookcase.bookStore[Bookcase.bookStore.keys.toList()[index]];
 
     return FlatButton(
-        onPressed: () => setState(() {
-              this.widget.itemonpress(bk);
-              
-            }),
+        onPressed: () => this.widget.itemonpress(bk),
         child: Container(
             padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
             child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: <Widget>[

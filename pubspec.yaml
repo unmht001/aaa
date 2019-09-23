@@ -32,6 +32,7 @@ dependencies:
   mytts8:
     git:
       url: https://github.com/unmht001/mytts8_2.git
+  draggable_scrollbar: ^0.0.4
   
   gbk2utf8: ^1.0.1
 

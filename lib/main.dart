@@ -14,7 +14,11 @@ MyListener initok = new MyListener();
 void main() async {
   initok.value = false;
   init(gun).then((bool) => initok.value = true);
-  runApp(MyApp());
+  try {
+    runApp(MyApp());
+  } catch (e) {
+    print(e);
+  }
 }
 
 //用于生成一个加载页面
@@ -46,6 +50,7 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
   @override
   bool get wantKeepAlive => true;
   PageController _pctler;
+  ScrollController _menuCtr;
   DateTime _lastPressAt;
   checkOnWillPop() {
     var f = (_lastPressAt == null ||
@@ -63,7 +68,10 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
   Widget build(BuildContext context) {
     var _tbs = [
       PageOne(itemonpress: onShujiaPress),
-      MenuPage(itemonpress: onMenuPress),
+      MenuPage(
+        itemonpress: onMenuPress,
+        controller: this._menuCtr,
+      ),
       ContentPage(pageReadOverAction: onPagePress)
     ];
     super.build(context);
@@ -79,6 +87,7 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
   @override
   void dispose() {
     this._pctler.dispose();
+    this._menuCtr.dispose();
     super.dispose();
   }
 
@@ -86,37 +95,28 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
   void initState() {
     super.initState();
     this._pctler = PageController(initialPage: 0);
+    this._menuCtr = ScrollController(initialScrollOffset: 1.0, keepScrollOffset: true);
   }
 
   void openpage(Book bk, {int page: 1}) =>
       this._pctler.animateToPage(page, duration: Duration(milliseconds: 300), curve: Curves.ease);
 
   onShujiaPress(Book bk) {
-    if (bk != BookMark.currentBook) {
-      var _pv = BookMark.currentBook.getMenuPv;
-      _pv.offset = _pv.value / _pv.max;
-      BookMark.currentBook = bk;
-      _pv = bk.getMenuPv;
-      _pv.value=_pv.offset*_pv.max;
-      bk.getMenu().then((x) {
-        if (x is List) {
-          bk.menu = x.map((a) => Chapter(a[0], a[1])).toList();
-        } else
-          print(x);
-        BookMark.menuLoadedLsn.value = true;
-      });
-    }
-
+    BookMark.currentBook = bk;
     openpage(bk, page: 1);
+    bk.getMenu().then((x) {
+      if (x is List) bk.menu = x.map((a) => Chapter(a[0], a[1])).toList();
+      BookMark.menuLoadedLsn.value = true;
+    });
   }
 
   onMenuPress(Book bk) => openpage(bk, page: 2);
 
   onPagePress(BookData bk) async {
-    if (ListenerBox.instance['bk'].value.selected > 0) {
-      ListenerBox.instance['bk'].value.selected -= 1;
-      (ListenerBox.instance['bk'].value as BookData).getpagedata();
-    }
+    // if (ListenerBox.instance['bk'].value.selected > 0) {
+    //   ListenerBox.instance['bk'].value.selected -= 1;
+    //   (ListenerBox.instance['bk'].value as BookData).getpagedata();
+    // }
   }
 }
 //19.09.19
@@ -125,3 +125,6 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
 
 //19.09.20
 //TODO: APP 分层       底层访问 -- 数据结构 --  界面显示    , 重写 APP架构以解决 19.09.19的问题.
+
+//19.09.23
+//DONE: 用 draggable_scrollbar 代替 自己的progress
