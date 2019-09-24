@@ -22,6 +22,21 @@ class Chain {
   Chain _son;
   Chain();
   Chain get father => _father;
+
+  int get genFather {
+    if (_father == null)
+      return 0;
+    else
+      return _father.genFather - 1;
+  }
+
+  int get genChildren {
+    if (_father == null)
+      return 0;
+    else
+      return _father.genChildren + 1;
+  }
+
   set father(Chain fa) {
     this._father = fa;
     fa._son = this;
@@ -31,6 +46,17 @@ class Chain {
 
   Chain get last => _son == null ? this : _son.son;
   Chain get son => _son;
+
+  Chain getGen(int x) {
+    if (x == 0)
+      return this;
+    else if (x < 0 && this._father != null)
+      return _father.getGen(x + 1);
+    else if (x > 0 && this._son != null)
+      return _son.getGen(x - 1);
+    else
+      return null;
+  }
 
   set son(Chain fa) {
     fa._father = this;
@@ -267,53 +293,6 @@ class ListenerBox {
   noSuchMethod(Invocation mirror) => print('You tried to use a non-existent member:' + '${mirror.memberName}');
 }
 
-class Textsheet extends Chain {
-  static const Color hColor = Colors.yellowAccent; //高亮颜色
-  static const Color lColor = Colors.brown; //平常颜色
-  Map data = {}; //数据集
-
-  Textsheet() : super() {
-    this.data["document"] = ""; //文字
-    this.data["highlight"] = false;
-  } //获取颜色
-  Textsheet.fromMap(mp) : this.fromString(mp['document'], mp['highlight']); //获取文字
-
-  Textsheet.fromString(String document, [bool highlight = false]) : super() {
-    this.data["document"] = document ?? ""; //文字
-    this.data["highlight"] = highlight;
-  }
-
-  Color get cl => this.data['highlight'] ? hColor : lColor;
-  String get text => data["document"];
-  @override
-  Chain born() => Chain.exchange(new Textsheet(), super.born());
-
-  changeHighlight() => this.data["highlight"] = !this.data["highlight"];
-  highLight() => this.data["highlight"] = true;
-  disHighLight() => this.data["highlight"] = false;
-
-  static Textsheet getTextsheetChain(String text) {
-    var s = text.split("\n");
-    s.removeWhere((test) => test == "");
-    if (s == null) {
-      return null;
-    } else {
-      Textsheet ch1;
-      Textsheet ch2;
-      for (var item in s) {
-        if (ch1 == null) {
-          ch1 = Textsheet.fromString(item);
-          ch2 = ch1;
-        } else {
-          ch2 = ch2.born();
-          ch2.data["document"] = item;
-        }
-      }
-      return ch1;
-    }
-  }
-}
-
 class NavData {
   String tt;
   IconData icon;
@@ -334,18 +313,8 @@ class Blockcelldata {
 
 class StateStore {
   bool canSet = true;
-  bool _doing = false;
-  bool get doing => _doing;
+  bool doing = false;
   List<Future> doingSetAfter = [];
-  set doing(bool value) {
-    _doing = value;
-    if (doingSetAfter.isNotEmpty && value)
-      doingSetAfter[0].then((x) {
-        doingSetAfter.removeAt(0);
-      }).then((x) {
-        doing = value;
-      });
-  }
 
   List<Function> action = [];
 }
@@ -373,38 +342,25 @@ mixin RefreshProviderState<T extends RefreshProviderSTF> on State<T> {
   }
 
   _setState() async {
-    print("start setState ${this.widget.state.action.length} " );
+    print("start setState ${this.widget.state.action.length} ");
     try {
       RefreshProviderState._count += 1;
-      print(RefreshProviderState._count);
+      print("${RefreshProviderState._count.toString()}:${this.widget.state.action.length}:${this.widget.state.doing}");
     } catch (e) {
       print(e);
     }
 
-    if (this.widget.state.action.isNotEmpty) {
-      if (!this.widget.state.doing) {
-        this.widget.state.doing = false;
-        await Future.value(this.widget.state.action[0]());
-        this.widget.state.action.removeAt(0);
-        this.widget.state.doing = true;
-        print("waiting:"+this.widget.state.action.length.toString());
-        await _setState();
-      } else {
-        var c = EventGun();
-        this.widget.state.doingSetAfter.add(Future(()async {
-          c.fire(true);
-        }));
-        var _rr= await  c.waitFire();
+    while (this.widget.state.action.isNotEmpty) {
+      this.widget.state.doing = true;
 
-        if (_rr){
-          await _setState();
-        }
-       
-      }
+      await Future.value((this.widget.state.action.removeAt(0))());
+      this.widget.state.doing = false;
     }
-    else{
-      if (this.mounted) super.setState((){});
-    }
+
+    if (this.widget.state.action.isEmpty && !this.widget.state.doing) if (this.mounted)
+      super.setState(() {});
+    else
+      await _setState();
   }
 
   @override
@@ -415,8 +371,7 @@ mixin RefreshProviderState<T extends RefreshProviderSTF> on State<T> {
       _setState().then((x) {
         this.widget.state.canSet = true;
       });
-    }else
-    {
+    } else {
       print("已经开始setState,此次加入等待");
     }
   }
@@ -453,16 +408,72 @@ class AppException implements Exception {
   String toString() => message ?? 'AppException';
 }
 
-class Chapter {
-  String content = "等待加载中";
-  Textsheet contentStart = new Textsheet();
-  String chapterUrl;
-  String chapterName;
-  Chapter(this.chapterUrl, this.chapterName);
-  getContent() {}
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+class SectionSheet extends Chain {
+  static Color hColor = Colors.yellowAccent; //高亮颜色
+  static Color lColor = Colors.amber[150]; //平常颜色
+
+  int index;
+  // Map data = {}; //数据集
+  String text;
+  bool isHightlight;
+  SectionSheet({this.text: "等待加载中", this.isHightlight: false});
+
+  //获取颜色
+  SectionSheet.fromMap(mp) : this.fromString(mp['text'], mp['highlight']); //获取文字
+
+  SectionSheet.fromString(String text, [bool isHighlight = false]) : this(text: text, isHightlight: isHighlight);
+  // SectionSheet.
+
+  Color get cl => isHightlight ? hColor : lColor;
+
+  SectionSheet born() => Chain.exchange(new SectionSheet(), super.born());
+
+  changeHighlight() => isHightlight = !isHightlight;
+  highLight() => isHightlight = true;
+  disHighLight() => isHightlight = false;
+
+  static SectionSheet getSectionSheetChain(String text) {
+    var s = text.split("\n");
+    s.removeWhere((test) => test == "");
+    if (s.isEmpty)
+      return null;
+    else {
+      SectionSheet ch1 = SectionSheet.fromString(s[0]);
+      SectionSheet ch2 = ch1;
+
+      for (var item in s) {
+        ch2.text = item;
+        ch2 = ch2.born();
+      }
+      ch2.father.son = null;
+      return ch1;
+    }
+  }
 }
 
-class BookDCS {}
+
+
+class Chapter {
+  String content = "等待加载中";
+  SectionSheet contentStart = new SectionSheet();
+  String chapterUrl;
+  String chapterName;
+  Book book;
+  Chapter([this.chapterUrl = "", this.chapterName = "", this.book]);
+  int index;
+  bool isloaded = false;
+
+  initContent() async {
+    if (book != null) {
+      content = await PageOp.getChapterData(this);
+      contentStart = SectionSheet.fromString(content.toString());
+      isloaded = true;
+    } else
+      return null;
+  }
+}
 
 class Book {
   String name;
@@ -475,19 +486,57 @@ class Book {
   String lastupdatetime;
   String lastupdatepagename;
   String uid;
+
   // String site;
 
   List<Chapter> menu = [];
 
-  Book(this.id, this.name, this.author, this.uid);
-  Book.fromMap(Map bookdata) : this(bookdata["id"], bookdata["name"], bookdata["author"], bookdata["uid"]);
-  getMenu() async => await PageOp.getmenudata(this);
+  initMenu(List<List<String>> lm) {
+    menu = [];
+    var i = 0;
 
+    for (var item in lm) {
+      menu.add(Chapter(item[0], item[1], this));
+      menu.last.index = i;
+      i++;
+    }
+  }
+
+  Book(this.id, this.name, this.author, this.uid) {
+    menu.add(Chapter(null, null, this));
+  }
+  Book.fromMap(Map bookdata) : this(bookdata["id"], bookdata["name"], bookdata["author"], bookdata["uid"]);
+  getMenu() async {
+    var a = await PageOp.getmenudata(this);
+    if (a is String)
+      return false;
+    else
+      this.initMenu(a);
+      getBookstate.isMenuLoaded=true;
+    return true;
+  }
+
+  // getContent(Chapter chapter) async => await PageOp.getpagedata(this, chapter);
   BookState get getBookstate => BookMark.bookState[this.uid];
   Site get getSite => Bookcase.siteStore[getBookstate.siteString];
   String get getMenuUrl => getSite.siteBaseUrl + getSite.bookBaseUrls[uid] + getSite.menuUrl;
   double get getMenuPv => getBookstate.menupv;
   // setMenuPv()=>getBookstate.menupv
+
+}
+
+class BookState {
+  String siteString;
+  Book book;
+  double menupv = 1.0;
+  static double menuOffset;
+  double pagepv = 1.0;
+  static double contentOffset;
+  Chapter currentChapter;
+
+  BookState(this.book, this.siteString);
+  bool isreading = false;
+  bool isMenuLoaded=false;
 
 }
 
@@ -543,18 +592,6 @@ class Site {
   Map<String, String> bookBaseUrls = {};
 }
 
-class BookState {
-  String siteString;
-  Book book;
-  double menupv = 1.0;
-  static double menuOffset;
-  double pagepv = 1.0;
-  static double contentOffset;
-  static Chapter currentChapter;
-  int currentChapterIndex;
-  BookState(this.book, this.siteString);
-}
-
 class BookMark {
   static Function currentBookAfterSetForMenu;
   static Function currentBookAfterSetForPage;
@@ -566,7 +603,7 @@ class BookMark {
     (currentBookAfterSetForPage ?? () {})();
   }
 
-  static Function menuPageRefresher;
+  // static Function menuPageRefresher;
 
   static Map<String, BookState> bookState = {};
 

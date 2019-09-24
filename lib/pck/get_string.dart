@@ -18,56 +18,48 @@ class PageOp {
       return 'unknow charset : $charset';
   }
 
-  static getpagedata(BookData book) async {
-    var f=book.readingLsn.value;
-    book.readingLsn.value=false;
-    // print(book.uid);
-    var lsn = book.pageLsn;
+  static getChapterData(Chapter chapter) async {
+    var r;
+    var book=chapter.book;
     try {
-      assert(book.selected != null, "未选中章节");
-      assert(book.menuLsn.value is List, "目录数据异常");
-
+      var url = book.getSite.siteBaseUrl + book.getSite.bookBaseUrls[book.uid] + chapter.chapterUrl;
       Dio dio = new Dio(
         BaseOptions(contentType: ContentType.html, responseType: ResponseType.bytes),
       );
 
-      lsn.value = "等待页面载入....";
-      var response = await dio.get(book.bookBaseUrl + book.menuLsn.value[book.selected][0]);
+      var response = await dio.get(url);
       if (response.statusCode == 200) {
-        var soup = Beautifulsoup(charsetS(response, charset: book.siteCharset).toString());
-        var _ss = soup.find(id: book.contentSoupTap);
+        var soup = Beautifulsoup(charsetS(response, charset: book.getSite.siteCharset).toString());
+        var _ss = soup.find(id: book.getSite.contentSoupTap);
         assert(_ss != null, "没有找到页面中的结果1");
 
-        var mch = RegExp(book.contentPatten, multiLine: true).allMatches(_ss.outerHtml);
+        var mch = RegExp(book.getSite.contentPatten, multiLine: true).allMatches(_ss.outerHtml);
         assert(mch.length != 0, "没有找到页面中的结果2");
 
-        lsn.value = Beautifulsoup(mch.first.group(1).toString()).doc.body.text;
+        r = Beautifulsoup(mch.first.group(1).toString()).doc.body.text;
+        return r;
       } else
-        lsn.value = "Request failed with status: ${response.statusCode}.";
+        r = "Request failed with status: ${response.statusCode}.";
     } catch (e) {
-      lsn.value = "getpagedta error"+e.toString();
-      print("getpage"+book.menuLsn.value[1].toString());
-      return false;
+      r = "getpagedta error" + e.toString();
+      print("getpage" + r);
     }
-    if(f)book.readingLsn.value=true;
-    
-    return true;
+    return r;
   }
 
   static getmenudata(Book book) async {
-    
     var _ret;
     try {
       Dio dio = new Dio(
         BaseOptions(contentType: ContentType.html, responseType: ResponseType.bytes),
       );
       _ret = "等待目录载入....";
-      
+
       Response response = await dio.get(book.getMenuUrl);
 
       if (response.statusCode == 200) {
         var soup = Beautifulsoup(charsetS(response, charset: book.getSite.siteCharset).toString());
-        var s1 = soup(book.getSite.menuSoupTag); 
+        var s1 = soup(book.getSite.menuSoupTag);
         var s2 = RegExp(book.getSite.menuPattan, multiLine: true).allMatches(s1.outerHtml);
         var s12 = RegExp("<a\\shref=\"(.+?)\">(.+?)</a>", multiLine: true);
         var _r;
@@ -82,7 +74,6 @@ class PageOp {
         _ret = "失败代码: ${response.statusCode}.";
     } catch (e) {
       _ret = e.toString();
-      
     }
     return _ret;
   }
