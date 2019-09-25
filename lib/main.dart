@@ -68,9 +68,9 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
   @override
   Widget build(BuildContext context) {
     var _tbs = [
-      PageOne(itemonpress: onShujiaPress),
-      MenuPage(itemonpress: onMenuPress, controller: this._menuCtr),
-      ChapterPage(controller: this._chapterCtr, pageReadOverAction: onPagePress)
+      PageOne(itemonpress: showMenuPage),
+      MenuPage(itemonpress: showChapterPage, controller: this._menuCtr),
+      ChapterPage(controller: this._chapterCtr, pageReadOverAction: toNextChapter)
     ];
     super.build(context);
     return WillPopScope(
@@ -101,14 +101,17 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
   void openpage(Book bk, {int page: 1}) =>
       this._pctler.animateToPage(page, duration: Duration(milliseconds: 300), curve: Curves.ease);
 
-  onShujiaPress(Book bk) {
+  showMenuPage(Book bk) {
     BookMark.currentBook = bk;
     openpage(bk, page: 1);
   }
 
-  onMenuPress(Book bk) => openpage(bk, page: 2);
+  showChapterPage(Book bk) => openpage(bk, page: 2);
 
-  onPagePress(BookData bk) async {
+  toNextChapter(Book bk)  {
+    if( bk.getBookstate.currentChapter.index<bk.menu.length-1)
+    bk.getBookstate.currentChapter=bk.menu[bk.getBookstate.currentChapter.index+1];
+
     // if (ListenerBox.instance['bk'].value.selected > 0) {
     //   ListenerBox.instance['bk'].value.selected -= 1;
     //   (ListenerBox.instance['bk'].value as BookData).getpagedata();

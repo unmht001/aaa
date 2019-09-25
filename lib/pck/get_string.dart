@@ -37,6 +37,7 @@ class PageOp {
         assert(mch.length != 0, "没有找到页面中的结果2");
 
         r = Beautifulsoup(mch.first.group(1).toString()).doc.body.text;
+        r=chapter.book.name+ " "+ chapter.chapterName+"\n"+r;
         return r;
       } else
         r = "Request failed with status: ${response.statusCode}.";

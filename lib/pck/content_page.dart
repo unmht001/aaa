@@ -8,9 +8,7 @@ import 'data_type_support.dart';
 
 class ReaderData {
   SectionSheet currentHL;
-  bool isReading = false;
   Function readingCompleteHandler;
-  Function handler;
 }
 
 mixin Reader on StatefulWidget {
@@ -27,14 +25,18 @@ mixin ReaderState<T extends Reader> on State<T> {
   Book get book => this.widget.book;
   ReaderData get pst => this.widget.pst;
   Mytts8 get tts => this.widget.tts;
+  // GlobalKey _gk;
+  pagemove(SectionSheet sss);
+
   continueReading() async {
     if (await tts.isLanguageAvailable('zh-CN'))
       setState(() {
-        tts.setCompletionHandler(() => setState(() {
+        tts.setCompletionHandler(() => setState(() async {
               if (pst.currentHL.son != null) {
                 pst.currentHL.disHighLight();
                 pst.currentHL = pst.currentHL.son;
                 pst.currentHL.highLight();
+                pagemove(pst.currentHL);
                 continueReading();
               } else
                 pst.readingCompleteHandler(book);
@@ -44,6 +46,32 @@ mixin ReaderState<T extends Reader> on State<T> {
     else
       print('language is not available');
   }
+
+  // nextChapterReading() async {
+  //   var a = book.getBookstate.isreading;
+  //   book.getBookstate.isreading = false;
+
+  //   if (book.getBookstate.currentChapter.index >= book.menu.length - 1) {
+  //   } else {
+  //     var chp = book.menu[book.getBookstate.currentChapter.index + 1];
+  //     setState(() => book.getBookstate.currentChapter = chp);
+  //     chp.initContent().then((x) => Future.delayed(
+  //         Duration(seconds: 2),
+  //         () => setState(() {
+  //               if (book.getBookstate.currentChapter.isloaded) {
+  //                 this.pst.currentHL = book.getBookstate.currentChapter.contentStart;
+  //                 this.pst.currentHL.highLight();
+  //                 startReading();
+  //               }
+  //               book.getBookstate.isreading = a;
+  //               if (a && book.getBookstate.currentChapter.isloaded) {
+  //                 this.pst.currentHL = book.getBookstate.currentChapter.contentStart;
+  //                 this.pst.currentHL.highLight();
+  //                 startReading();
+  //               }
+  //             })));
+  //   }
+  // }
 
   startReading() async {
     book.getBookstate.isreading = true;
@@ -55,21 +83,16 @@ mixin ReaderState<T extends Reader> on State<T> {
     tts.stop();
   }
 
-  refreshpage() {
-    //   book.pageLsn.value = this.widget.pst.currentHL = book.pageLsn.value is String
-    //       ? SectionSheet.getSectionSheetChain(this.widget.lsn.value)
-    //       : book.pageLsn.value as SectionSheet;
-
-    //   book.pageLsn.value.highLight();
-    //   if (this.mounted) setState(() {});
-    // }
+  smartReading() async {
+    book.getBookstate.isreading = !book.getBookstate.isreading;
+    book.getBookstate.isreading ? continueReading() : tts.stop();
   }
 }
 
 class ChapterPage extends StatelessWidget {
   final ScrollController controller;
   final Function pageReadOverAction;
-  ChapterPage({this.controller,this.pageReadOverAction});  
+  ChapterPage({this.controller, this.pageReadOverAction});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -78,10 +101,9 @@ class ChapterPage extends StatelessWidget {
   }
 }
 
-
 class ChapterViewList extends StatefulWidget with RefreshProviderSTF, Reader {
   final ScrollController controller;
-  Chapter get  chapter=>BookMark.currentBook.getBookstate.currentChapter;
+  Chapter get chapter => BookMark.currentBook.getBookstate.currentChapter;
   ChapterViewList({Key key, Function pageReadOverAction, this.controller}) : super(key: key) {
     this.pst.readingCompleteHandler = pageReadOverAction; //设置阅读器读完本页后的动作
   }
@@ -94,29 +116,35 @@ class ChapterViewList extends StatefulWidget with RefreshProviderSTF, Reader {
 }
 
 class _ChapterViewListState extends State<ChapterViewList> with RefreshProviderState, ReaderState {
+  SectionSheet get thisFireS => this.widget.book.getBookstate.currentChapter.contentStart;
+
+  @override
+  pagemove(SectionSheet sss) {
+    // this.widget.controller.position.moveTo(sss.sumheight - 300);
+    this.widget.controller.position.moveTo(this.widget.controller.position.pixels+sss.height);
+    print(this.widget.controller.offset);
+    print(sss.height);
+    print("prixels: ${this.widget.controller.position.pixels}");
+  }
+
   sectionSheet2Card(SectionSheet sss) {
     return Container(
-        color: sss.cl,
+        key: sss.sgk,
+        color: book.getBookstate.isreading&& sss.isHighlight?Colors.greenAccent[100] :sss.cl,
         padding: EdgeInsets.all(5),
         child: GestureDetector(
             child: Text(sss.text, softWrap: true, style: TextStyle(fontWeight: FontWeight.w500, fontSize: 20.0)),
             onTap: () => setState(() {
-                  // if (this.widget.pst.currentHL != null) this.widget.pst.currentHL.disHighLight();
-                  // this.widget.pst.currentHL = sss;
-                  // this.widget.pst.currentHL.highLight();
-                  // this.book.readingLsn.value = !this.book.readingLsn.value;
-                  // this.book.readingLsn.value ? startReading() : stopReading();
+                  this.widget.pst.currentHL = sss;
+                  this.widget.pst.currentHL.highLight();
+                  smartReading();
                 })));
   }
 
   @override
   Widget build(BuildContext context) {
-    print("build menu");
-    if (this.widget.chapter == null || this.widget.book == null)
-      return Container(
-        color: Colors.brown[200],
-      );
-
+    print("build ChapterPage");
+    if (this.widget.chapter == null || this.widget.book == null) return Container(color: Colors.brown[200]);
     Widget _r;
     try {
       _r = Container(
@@ -134,8 +162,27 @@ class _ChapterViewListState extends State<ChapterViewList> with RefreshProviderS
                   controller: this.widget.controller,
                   itemCount: this.widget.chapter.contentStart.genChildren + 1,
                   itemBuilder: (context, index) => sectionSheet2Card(this.widget.chapter.contentStart.getGen(index)))));
-      if (!this.widget.chapter.isloaded) {
-        this.widget.chapter.initContent().then((x) => setState(() { print("initContent over");}));
+      if (!this.widget.chapter.isloaded && !this.widget.chapter.isloading) {
+        this
+            .widget
+            .chapter
+            .initContent()
+            .then((x) => Future.delayed(
+                Duration(seconds: 1),
+                () => setState(() {
+                      this.widget.pst.currentHL = book.getBookstate.currentChapter.contentStart;
+                      print("initContent over : $x");
+                    })))
+            .then((x) => startReading());
+      } else if (this.widget.chapter.isloaded) {
+        if (this.widget.pst.currentHL == null || this.widget.pst.currentHL.first != this.widget.chapter.contentStart) {
+          this.widget.pst.currentHL = this.widget.chapter.contentStart;
+          this.widget.pst.currentHL.highLight();
+          setState(() {});
+        }
+      } else if (this.widget.pst.currentHL.isHighlight == false) {
+        this.widget.pst.currentHL.highLight();
+        setState(() {});
       }
     } catch (e) {
       _r = Container(child: Text(e.toString(), softWrap: true));
@@ -143,104 +190,3 @@ class _ChapterViewListState extends State<ChapterViewList> with RefreshProviderS
     return _r;
   }
 }
-
-// class ContentPage extends StatefulWidget with RefreshProviderSTF, Reader {
-//   final Book book;
-//   ContentPage({Key key, Function pageReadOverAction, this.book}) : super(key: key) {
-//     this.pst.readingCompleteHandler = pageReadOverAction; //设置阅读器读完本页后的动作
-//   }
-
-//   @override
-//   _ContentPageState createState() => _ContentPageState();
-// }
-
-// class _ContentPageState extends State<ContentPage>
-//     with RefreshProviderState, AutomaticKeepAliveClientMixin, ReaderState {
-//   @override
-//   bool get wantKeepAlive => true;
-//   ProgressValue get pv => this.widget.book.pagePv;
-//   @override
-//   get book => BookMark.currentBook;
-//   final _ctr = new ScrollController(keepScrollOffset: true);
-
-//   @override
-//   Widget build(BuildContext context) {
-//     super.build(context);
-//     return Container(
-//         child: Column(children: <Widget>[
-//       Expanded(
-//           child: NotificationListener(
-//               onNotification: (ScrollNotification note) {
-//                 pv.max = (note.metrics.maxScrollExtent - note.metrics.minScrollExtent);
-//                 pv.value = (note.metrics.pixels - note.metrics.minScrollExtent);
-//                 setState(() {});
-//                 return true;
-//               },
-//               child: book.pageLsn.value is String
-//                   ? ListView(controller: _ctr, children: <Widget>[])
-//                   : ListView(controller: _ctr, children: chainToWidgetList(book.pageLsn.value as SectionSheet)))),
-//       Container(
-//           padding: EdgeInsets.all(5),
-//           height: 50,
-//           child: ClipRRect(
-//               // 边界半径（`borderRadius`）属性，圆角的边界半径。
-//               borderRadius: BorderRadius.all(Radius.circular(10.0)),
-//               child: ProgressDragger(
-//                 _ctr,
-//                 color: Colors.yellow,
-//                 onTapUp: (d) {
-//                   _ctr.animateTo(pv.value, duration: Duration(milliseconds: 500), curve: Curves.ease);
-//                 },
-//                 onVerticalDragUpdate: (d) {
-//                   _ctr.animateTo(pv.value, duration: Duration(milliseconds: 500), curve: Curves.ease);
-//                 },
-//                 valueColor: AlwaysStoppedAnimation(Colors.red),
-//               )))
-//     ]));
-//   }
-
-//   List<Widget> chainToWidgetList(Chain sss) {
-//     List<Widget> a = [];
-//     var b = sss;
-//     while (b != null) {
-//       a.add(textsheetToWidget(b));
-//       b = b.son;
-//     }
-//     return a;
-//   }
-
-//   @override
-//   dispose() {
-//     this.book.pageLsn.afterSetter = () {};
-//     super.dispose();
-//   }
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     this.widget.pst.currentHL = this.book.pageLsn.value = this.book.pageLsn.value is String
-//         ? SectionSheet.getSectionSheetChain(this.widget.lsn.value)
-//         : this.book.pageLsn.value as SectionSheet;
-//     this.book.pageLsn.afterSetter = refreshpage;
-//     if (this.book.pageLsn.value != null) this.book.pageLsn.value.highLight();
-//     ListenerBox.instance['cpLoaded'].afterSetter = () {
-//       if (book.readingLsn.value) startReading();
-//     };
-//     // this.widget.book.getpagedata().then((x) => setState(() {}));
-//   }
-
-//   Widget textsheetToWidget(SectionSheet sss) {
-//     return Container(
-//         color: sss.cl,
-//         padding: EdgeInsets.all(5),
-//         child: GestureDetector(
-//             child: Text(sss.text, softWrap: true, style: TextStyle(fontWeight: FontWeight.w500, fontSize: 20.0)),
-//             onTap: () => setState(() {
-//                   if (this.widget.pst.currentHL != null) this.widget.pst.currentHL.disHighLight();
-//                   this.widget.pst.currentHL = sss;
-//                   this.widget.pst.currentHL.highLight();
-//                   this.book.readingLsn.value = !this.book.readingLsn.value;
-//                   this.book.readingLsn.value ? startReading() : stopReading();
-//                 })));
-//   }
-// }

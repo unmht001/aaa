@@ -17,68 +17,63 @@ String getUid(int length) {
   return left;
 }
 
-class Chain {
-  Chain _father;
-  Chain _son;
-  Chain();
-  Chain get father => _father;
+abstract class AbstractBaseChain<T> {
+  T _father;
+  T _son;
+  T get father;
+  set father(T father);
+  T get son;
+  set son(T son);
+}
 
-  int get genFather {
-    if (_father == null)
-      return 0;
-    else
-      return _father.genFather - 1;
+abstract class AbstractChain<T extends AbstractBaseChain> extends AbstractBaseChain {
+  @override
+  T get father => _father;
+  @override
+  T get son => _son;
+
+  @override
+  set father(father) {
+    this._father = father;
+    father._son = this;
   }
 
-  int get genChildren {
-    if (_father == null)
-      return 0;
-    else
-      return _father.genChildren + 1;
+  @override
+  set son(son) {
+    if (son != null) son._father = this;
+    this._son = son;
   }
 
-  set father(Chain fa) {
-    this._father = fa;
-    fa._son = this;
+  T get first => _father == null ? this : _father.first;
+  T get last => _son == null ? this : _son.son;
+
+  int get genFather => _father == null ? 0 : _father.genFather - 1;
+  int get genChildren => _son == null ? 0 : _son.genChildren + 1;
+
+  T exchange(T ch1, T ch2) {
+    if (ch2._father != null) ch1.father = ch2.father;
+    if (ch2._son != null) ch1.son = ch2.son;
+    return ch1;
   }
 
-  Chain get first => _father == null ? this : _father.first;
+  T born(T child) {
+    if (this.son != null) {
+      return this.son;
+    } else {
+      child.father = this;
+      return child;
+    }
+  }
 
-  Chain get last => _son == null ? this : _son.son;
-  Chain get son => _son;
-
-  Chain getGen(int x) {
+  T getGen(int x) {
     if (x == 0)
-      return this;
+      return this as T;
     else if (x < 0 && this._father != null)
       return _father.getGen(x + 1);
     else if (x > 0 && this._son != null)
       return _son.getGen(x - 1);
     else
       return null;
-  }
-
-  set son(Chain fa) {
-    fa._father = this;
-    this._son = fa;
-  }
-
-  Chain born() {
-    if (this.son != null) {
-      return this.son;
-    } else {
-      var _r = new Chain();
-      _r._father = this;
-      _r.father._son = _r;
-      return _r;
-    }
-  }
-
-  static Chain exchange(Chain ch1, Chain ch2) {
-    //用 ch1 代替 ch2的位置;返回ch2;
-    if (ch2._father != null) ch1.father = ch2.father;
-    if (ch2._son != null) ch1.son = ch2.son;
-    return ch1;
   }
 }
 
@@ -357,10 +352,7 @@ mixin RefreshProviderState<T extends RefreshProviderSTF> on State<T> {
       this.widget.state.doing = false;
     }
 
-    if (this.widget.state.action.isEmpty && !this.widget.state.doing) if (this.mounted)
-      super.setState(() {});
-    else
-      await _setState();
+    if (this.widget.state.action.isEmpty && !this.widget.state.doing && this.mounted) super.setState(() {});
   }
 
   @override
@@ -410,33 +402,47 @@ class AppException implements Exception {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-class SectionSheet extends Chain {
-  static Color hColor = Colors.yellowAccent; //高亮颜色
-  static Color lColor = Colors.amber[150]; //平常颜色
+class SectionSheet extends AbstractChain<SectionSheet> {
+  static Color hColor = Colors.blueAccent[100]; //高亮颜色
+  static Color lColor = Colors.amber[50]; //平常颜色
+
+  GlobalKey sgk = new GlobalKey();
+
+  double get height => (sgk?.currentContext?.size?.height) ?? 0.0;
+  double get sumheight => height + ( father==null ? 0.0: father.sumheight);
 
   int index;
   // Map data = {}; //数据集
   String text;
-  bool isHightlight;
-  SectionSheet({this.text: "等待加载中", this.isHightlight: false});
+  bool isHighlight = false;
+  SectionSheet({this.text: "等待加载中", this.isHighlight: false});
 
-  //获取颜色
   SectionSheet.fromMap(mp) : this.fromString(mp['text'], mp['highlight']); //获取文字
+  SectionSheet.fromString(String text, [bool isHighlight = false]) : this(text: text, isHighlight: isHighlight);
 
-  SectionSheet.fromString(String text, [bool isHighlight = false]) : this(text: text, isHightlight: isHighlight);
-  // SectionSheet.
+  Color get cl => isHighlight ? hColor : lColor;
+  changeHighlight() => isHighlight = !isHighlight;
+  highLight() {
+    print("height");
+    SectionSheet _c = this;
+    while (_c._father != null) {
+      _c = _c._father;
+      _c.isHighlight = false;
+    }
+    _c = this;
+    while (_c._son != null) {
+      _c = _c._son;
+      _c.isHighlight = false;
+    }
 
-  Color get cl => isHightlight ? hColor : lColor;
+    this.isHighlight = true;
+  }
 
-  SectionSheet born() => Chain.exchange(new SectionSheet(), super.born());
-
-  changeHighlight() => isHightlight = !isHightlight;
-  highLight() => isHightlight = true;
-  disHighLight() => isHightlight = false;
+  disHighLight() => isHighlight = false;
 
   static SectionSheet getSectionSheetChain(String text) {
     var s = text.split("\n");
-    s.removeWhere((test) => test == "");
+    s.removeWhere((x) => x == "");
     if (s.isEmpty)
       return null;
     else {
@@ -445,7 +451,7 @@ class SectionSheet extends Chain {
 
       for (var item in s) {
         ch2.text = item;
-        ch2 = ch2.born();
+        ch2 = ch2.born(SectionSheet());
       }
       ch2.father.son = null;
       return ch1;
@@ -453,25 +459,43 @@ class SectionSheet extends Chain {
   }
 }
 
-
-
 class Chapter {
   String content = "等待加载中";
-  SectionSheet contentStart = new SectionSheet();
+  SectionSheet baseSectionSheet = new SectionSheet();
+  SectionSheet _contentStart;
+  SectionSheet get contentStart {
+    if (isloaded) {
+      assert(_contentStart != null);
+      return _contentStart;
+    } else
+      return baseSectionSheet;
+  }
+
+  set contentStart(SectionSheet sectionSheet) => _contentStart = sectionSheet;
+
   String chapterUrl;
   String chapterName;
   Book book;
   Chapter([this.chapterUrl = "", this.chapterName = "", this.book]);
   int index;
   bool isloaded = false;
+  bool isloading = false;
 
   initContent() async {
-    if (book != null) {
-      content = await PageOp.getChapterData(this);
-      contentStart = SectionSheet.fromString(content.toString());
-      isloaded = true;
-    } else
-      return null;
+    if (!isloading) {
+      isloading = true;
+      if (book != null) {
+        content = await PageOp.getChapterData(this);
+        contentStart = SectionSheet.getSectionSheetChain(content.toString());
+        contentStart.highLight();
+        isloaded = true;
+        isloading = false;
+        return true;
+      } else
+        isloading = false;
+      return false;
+    }
+    return true;
   }
 }
 
@@ -512,7 +536,7 @@ class Book {
       return false;
     else
       this.initMenu(a);
-      getBookstate.isMenuLoaded=true;
+    getBookstate.isMenuLoaded = true;
     return true;
   }
 
@@ -536,8 +560,7 @@ class BookState {
 
   BookState(this.book, this.siteString);
   bool isreading = false;
-  bool isMenuLoaded=false;
-
+  bool isMenuLoaded = false;
 }
 
 class Bookcase {

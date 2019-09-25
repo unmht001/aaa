@@ -173,8 +173,8 @@ class StateInit {
       Bookcase.init(bks, sitedata, "ywXSyXTKVO");
       // BookMark.currentBook=
 
-      ListenerBox.instance['bk'].value = bks[0];
-      ListenerBox.instance['bks'].value = bks;
+      // ListenerBox.instance['bk'].value = bks[0];
+      // ListenerBox.instance['bks'].value = bks;
       ListenerBox.instance['isreading'].value = false;
       ListenerBox.instance['cpLoaded'].value = false;
       ListenerBox.instance['tts'].value = Mytts8();
