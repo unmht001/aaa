@@ -1,4 +1,6 @@
+// import 'package:aaa/init_fun.dart';
 import 'package:flutter/material.dart';
+import 'Refresh_Provider.dart';
 import "main_page_shaixuan.dart";
 import 'package:aaa/data.dart';
 import 'data_type_support.dart';
@@ -13,15 +15,17 @@ class PageOne extends StatefulWidget with RefreshProviderSTF {
   _PageOneState createState() => _PageOneState();
 }
 
-class _PageOneState extends State<PageOne> with TickerProviderStateMixin, RefreshProviderState {
+class _PageOneState extends State<PageOne> with AutomaticKeepAliveClientMixin,  TickerProviderStateMixin, RefreshProviderState {
   TabController _p1ctl;
   TabController _controller;
+  @override
+  bool get wantKeepAlive => true;
   @override
   void initState() {
     super.initState();
     _p1ctl = TabController(vsync: this, length: 2);
     this._controller = TabController(
-        vsync: this, length: ListenerBox.instance['navs'].inited ? ListenerBox.instance['navs'].value.length : 0);
+        vsync: this, length: Appdata.instance.navs.length);
   }
 
   @override
@@ -33,6 +37,7 @@ class _PageOneState extends State<PageOne> with TickerProviderStateMixin, Refres
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
         //page 1
         body: TabBarView(
@@ -48,7 +53,7 @@ class _PageOneState extends State<PageOne> with TickerProviderStateMixin, Refres
 
   List<BottomNavigationBarItem> navs() {
     List<BottomNavigationBarItem> _r = [];
-    for (var x in (ListenerBox.instance['navs'].inited ? ListenerBox.instance['navs'].value : []))
+    for (var x in (Appdata.instance.navs))
       _r.add(BottomNavigationBarItem(title: Text(x.tt), icon: Icon(x.icon)));
     return _r;
   }

@@ -1,11 +1,13 @@
-import 'dart:async';
+// import 'dart:async';
+
 
 import "dart:math";
-// import 'package:aaa/pck/content_page.dart';
 import 'package:aaa/pck/get_string.dart';
-import 'package:aaa/pck/progress.dart';
+// import 'package:aaa/pck/map_support.dart';
+import 'chain_support.dart';
+// import 'package:aaa/pck/progress.dart';
 import 'package:flutter/material.dart';
-import 'dart:convert';
+// import 'dart:convert';
 
 String getUid(int length) {
   String alphabet = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM';
@@ -17,209 +19,6 @@ String getUid(int length) {
   return left;
 }
 
-abstract class AbstractBaseChain<T> {
-  T _father;
-  T _son;
-  T get father;
-  set father(T father);
-  T get son;
-  set son(T son);
-}
-
-abstract class AbstractChain<T extends AbstractBaseChain> extends AbstractBaseChain {
-  @override
-  T get father => _father;
-  @override
-  T get son => _son;
-
-  @override
-  set father(father) {
-    this._father = father;
-    father._son = this;
-  }
-
-  @override
-  set son(son) {
-    if (son != null) son._father = this;
-    this._son = son;
-  }
-
-  T get first => _father == null ? this : _father.first;
-  T get last => _son == null ? this : _son.son;
-
-  int get genFather => _father == null ? 0 : _father.genFather - 1;
-  int get genChildren => _son == null ? 0 : _son.genChildren + 1;
-
-  T exchange(T ch1, T ch2) {
-    if (ch2._father != null) ch1.father = ch2.father;
-    if (ch2._son != null) ch1.son = ch2.son;
-    return ch1;
-  }
-
-  T born(T child) {
-    if (this.son != null) {
-      return this.son;
-    } else {
-      child.father = this;
-      return child;
-    }
-  }
-
-  T getGen(int x) {
-    if (x == 0)
-      return this as T;
-    else if (x < 0 && this._father != null)
-      return _father.getGen(x + 1);
-    else if (x > 0 && this._son != null)
-      return _son.getGen(x - 1);
-    else
-      return null;
-  }
-}
-
-class BookData {
-  int id = 0;
-  String pic;
-  String name;
-  String author;
-  String progress;
-  String lastupdatetime;
-  String lastupdatepagename;
-  String state;
-
-  double fensizhi;
-  String fensidengji;
-  bool dingzhi;
-  bool gengxintixing;
-  bool zidongdingyue;
-  bool shuyouquanxinxiaoxi;
-  int tuijianpiao;
-  int yuepiao;
-
-// 地址相关
-  String bookBaseUrl;
-  String menuUrl;
-  String menuSoupTag;
-  String menuPattan;
-  get menudata => this.menuLsn.value;
-  set menudata(value) => this.menudata.value = value;
-  num selected;
-  String siteCharset;
-  String contentSoupTap;
-  String contentPatten;
-// 地址相关
-
-  String uid;
-  MyListener menuLsn;
-  MyListener pageLsn;
-  MyListener readingLsn;
-  Map _mp;
-
-  ProgressValue menuPv = new ProgressValue(0, 100);
-  ProgressValue pagePv = new ProgressValue(0, 100);
-
-  String toJson() {
-    return json.encode(this._mp);
-  }
-
-  String toString() {
-    return this._mp.toString();
-  }
-
-  continueReading() {}
-
-  // getpagedata() async => await PageOp.getpagedata(this);
-  // getmenudata() async => await PageOp.getmenudata(this);
-  getpagedata() async => null;
-  getmenudata() async => null;
-
-  BookData(
-      {this.id = 0,
-      this.pic: "图片",
-      this.name: "书名",
-      this.author: "作者名称",
-      this.progress: "当前阅读进度",
-      this.lastupdatetime: "最新时间",
-      this.lastupdatepagename: "最新章节名称",
-      this.state: "连载状态",
-      this.fensizhi: 0,
-      this.fensidengji: "见习",
-      this.dingzhi: false,
-      this.gengxintixing: false,
-      this.zidongdingyue: false,
-      this.shuyouquanxinxiaoxi: false,
-      this.tuijianpiao: 0,
-      this.yuepiao: 0,
-      this.bookBaseUrl: "",
-      this.menuUrl: "",
-      this.menuSoupTag: "",
-      this.menuPattan: "",
-      this.selected: 0,
-      this.siteCharset,
-      this.contentSoupTap: "",
-      this.contentPatten: ""}) {
-    uid = getUid(10);
-    pageLsn = ListenerBox.instance["page-" + uid];
-    pageLsn.value = "等待页面载入....";
-    menuLsn = ListenerBox.instance["menu-" + uid];
-    menuLsn.value = "等待目录载入....";
-    readingLsn = ListenerBox.instance["reading-" + uid];
-    readingLsn.value = false;
-
-    this._mp = {
-      "id": this.id,
-      "pic": this.pic,
-      "name": this.name,
-      "author": this.author,
-      "progress": this.progress,
-      "lastupdatepagename": this.lastupdatepagename,
-      "state": this.state,
-      "fensizhi": this.fensizhi,
-      "fensidengji": this.fensidengji,
-      "gengxintixing": this.gengxintixing,
-      "zidongdingyue": this.zidongdingyue,
-      "shuyouquanxinxiaoxi": this.shuyouquanxinxiaoxi,
-      "tuijianpiao": this.tuijianpiao,
-      "yuepiao": this.yuepiao,
-      "baseUrl": this.bookBaseUrl,
-      "menuUrl": this.menuUrl,
-      "menuSoupTag": this.menuSoupTag,
-      "menuPattan": this.menuPattan,
-      "menudata": this.menudata,
-      "selected": this.selected,
-      "siteCharset": this.siteCharset,
-      "contentSoupTap": this.contentSoupTap,
-      "contentPatten": this.contentPatten,
-      "uid": this.uid
-    };
-  }
-  BookData.create(Map mp)
-      : this(
-            id: mp["id"] ?? 0,
-            pic: mp["pic"] ?? "图片",
-            name: mp["name"] ?? "书名",
-            author: mp["author"] ?? "作者名称",
-            progress: mp["progress"] ?? "当前阅读进度",
-            lastupdatetime: mp["lastupdatetime"] ?? "最新时间",
-            lastupdatepagename: mp["lastupdatepagename"] ?? "最新章节名称",
-            state: mp["state"] ?? "连载状态",
-            fensizhi: mp["fensizhi"] ?? 0,
-            fensidengji: mp["fensidengji"] ?? "见习",
-            dingzhi: mp["dingzhi"] ?? false,
-            gengxintixing: mp["gengxintixing"] ?? false,
-            zidongdingyue: mp["zidongdingyue"] ?? false,
-            shuyouquanxinxiaoxi: mp["shuyouquanxinxiaoxi"] ?? false,
-            tuijianpiao: mp["tuijianpiao"] ?? 0,
-            yuepiao: mp["yuepiao"] ?? 0,
-            bookBaseUrl: mp["baseUrl"] ?? "",
-            menuUrl: mp["menuUrl"] ?? "",
-            menuSoupTag: mp["menuSoupTag"] ?? "",
-            menuPattan: mp["menuPattan"] ?? "",
-            selected: mp["selected"] ?? 0,
-            siteCharset: mp["siteCharset"] ?? "",
-            contentSoupTap: mp["contentSoupTap"] ?? "",
-            contentPatten: mp["contentPatten"] ?? "");
-}
 
 class MyListener {
   dynamic _v = "初始";
@@ -243,50 +42,8 @@ class MyListener {
   }
 }
 
-class ListenerBox {
-  static final Map<String, MyListener> _box = {};
-  static ListenerBox _instance;
 
-  static ListenerBox get instance => _getInstance();
-  factory ListenerBox() => _getInstance();
-  ListenerBox._internal();
 
-  MyListener operator [](String key) => key.isEmpty ? null : (_box[key] ?? (_box[key] = new MyListener()) ?? _box[key]);
-  operator []=(String key, MyListener value) => key.isEmpty ? null : _box[key] ?? ((_box[key] = value) ?? _box[key]);
-
-  static ListenerBox _getInstance() => _instance ?? ((_instance = new ListenerBox._internal()) ?? _instance);
-
-  void el(String name) => ListenerBox.instance[name];
-  MyListener getel(String name) => ListenerBox.instance[name];
-
-  Iterable<MapEntry> get entries => _box.entries;
-  Iterable get keys => _box.keys;
-  int get length => _box.length;
-  Iterable get values => _box.values;
-
-  void addAll(Map other) => _box.addAll(other);
-  void addEntries(Iterable<MapEntry> newEntries) => _box.addEntries(newEntries);
-  void clear() => _box.clear();
-  void updateAll(MyListener Function(Object key, Object value) update) => _box.updateAll(update);
-  void removeWhere(bool Function(Object key, Object value) predicate) => _box.removeWhere(predicate);
-  void forEach(void Function(Object key, Object value) f) => _box.forEach(f);
-
-  bool containsKey(Object key) => _box.containsKey(key);
-  bool containsValue(Object value) => _box.containsValue(value);
-  bool isEmpty() => _box.isEmpty;
-  bool isNotEmpty() => _box.isNotEmpty;
-
-  Map<K2, V2> map<K2, V2>(MapEntry<K2, V2> Function(Object key, Object value) f) => map(f);
-  Map<RK, RV> cast<RK, RV>() => _box.cast();
-
-  putIfAbsent(key, Function() ifAbsent) => _box.putIfAbsent(key, ifAbsent);
-  remove(Object key) => _box.remove(key);
-  update(key, MyListener Function(Object value) update, {Function() ifAbsent}) =>
-      _box.update(key, update, ifAbsent: ifAbsent);
-
-  @override
-  noSuchMethod(Invocation mirror) => print('You tried to use a non-existent member:' + '${mirror.memberName}');
-}
 
 class NavData {
   String tt;
@@ -306,99 +63,7 @@ class Blockcelldata {
   Blockcelldata(this.tt, this.count, {this.ftsz: 13, this.tcolor: Colors.white});
 }
 
-class StateStore {
-  bool canSet = true;
-  bool doing = false;
-  List<Future> doingSetAfter = [];
 
-  List<Function> action = [];
-}
-
-mixin RefreshProviderSTF on StatefulWidget {
-  final List<Function> _lf = [() {}];
-  final StateStore state = new StateStore();
-  refresh() {
-    _lf[0]();
-  }
-}
-mixin RefreshProviderState<T extends RefreshProviderSTF> on State<T> {
-  final List<Function> _lf = [() {}];
-  static int _count = 0;
-  @override
-  void initState() {
-    super.initState();
-    this.widget._lf[0] = () => setState(() {});
-  }
-
-  @override
-  void dispose() {
-    this.widget._lf[0] = () {};
-    super.dispose();
-  }
-
-  _setState() async {
-    print("start setState ${this.widget.state.action.length} ");
-    try {
-      RefreshProviderState._count += 1;
-      print("${RefreshProviderState._count.toString()}:${this.widget.state.action.length}:${this.widget.state.doing}");
-    } catch (e) {
-      print(e);
-    }
-
-    while (this.widget.state.action.isNotEmpty) {
-      this.widget.state.doing = true;
-
-      await Future.value((this.widget.state.action.removeAt(0))());
-      this.widget.state.doing = false;
-    }
-
-    if (this.widget.state.action.isEmpty && !this.widget.state.doing && this.mounted) super.setState(() {});
-  }
-
-  @override
-  setState(fn) {
-    this.widget.state.action.add(fn);
-    if (this.widget.state.canSet) {
-      this.widget.state.canSet = false;
-      _setState().then((x) {
-        this.widget.state.canSet = true;
-      });
-    } else {
-      print("已经开始setState,此次加入等待");
-    }
-  }
-}
-
-//todo: 写一个dart 的 类似 python 的 async.event
-class EventGun {
-  bool isFired = false;
-  bool isWaiting = false;
-
-  Completer _completer = new Completer();
-
-  Future waitFire() {
-    if (this._completer.isCompleted) throw AppException("Gun is destroyed");
-    if (this.isFired) throw AppException("Gun is fired");
-    if (this.isWaiting) throw AppException("Gun is on some waiting ");
-    this.isWaiting = true;
-    return this._completer.future;
-  }
-
-  fire([arg]) {
-    if (this._completer.isCompleted) throw AppException("Gun is destroyed");
-    if (this.isFired) throw AppException("Gun is fired");
-    if (!this.isWaiting) throw AppException("Gun is not waiting ");
-    this.isWaiting = false;
-    this.isFired = false;
-    this._completer.complete(arg);
-  }
-}
-
-class AppException implements Exception {
-  final String message;
-  const AppException([this.message]);
-  String toString() => message ?? 'AppException';
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -408,8 +73,11 @@ class SectionSheet extends AbstractChain<SectionSheet> {
 
   GlobalKey sgk = new GlobalKey();
 
+  SectionSheet _father;
+  SectionSheet _son;
+
   double get height => (sgk?.currentContext?.size?.height) ?? 0.0;
-  double get sumheight => height + ( father==null ? 0.0: father.sumheight);
+  double get sumheight => height + (father == null ? 0.0 : father.sumheight);
 
   int index;
   // Map data = {}; //数据集
