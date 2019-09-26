@@ -38,7 +38,7 @@ mixin ReaderState<T extends Reader> on State<T> {
                 pagemove(pst.currentHL);
                 continueReading();
               } else
-                pst.readingCompleteHandler(book);
+                pst.readingCompleteHandler(1.0);
             }));
         if (book.getBookstate.isreading) this.widget.tts.speak(pst.currentHL.text);
       });
@@ -64,12 +64,11 @@ mixin ReaderState<T extends Reader> on State<T> {
 
 class ChapterPage extends StatelessWidget {
   final ScrollController controller;
-  final Function pageReadOverAction;
-  ChapterPage({this.controller, this.pageReadOverAction});
+  ChapterPage({this.controller});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ChapterViewList(pageReadOverAction: this.pageReadOverAction, controller: this.controller),
+      body: ChapterViewList(controller: this.controller),
     );
   }
 }
@@ -77,8 +76,13 @@ class ChapterPage extends StatelessWidget {
 class ChapterViewList extends StatefulWidget with RefreshProviderSTF, Reader {
   final ScrollController controller;
   Chapter get chapter => BookMark.currentBook.getBookstate.currentChapter;
-  ChapterViewList({Key key, Function pageReadOverAction, this.controller}) : super(key: key) {
-    this.pst.readingCompleteHandler = pageReadOverAction; //设置阅读器读完本页后的动作
+  ChapterViewList({Key key, this.controller}) : super(key: key) {
+    this.pst.readingCompleteHandler = (double v) {
+      num f1 = BookMark.currentBook.getBookstate.currentChapter.index;
+      num f2 = BookMark.currentBook.menu.length;
+      num f3 = (v < 0 && f1 < f2 - 1) ? 1 : (v > 0 && f1 > 1) ? -1 : null;
+      if (f3 != null) BookMark.currentBook.getBookstate.currentChapter = BookMark.currentBook.menu[f1 + f3];
+    }; //设置阅读器读完本页后的动作
   }
 
   @override
@@ -138,24 +142,8 @@ class _ChapterViewListState extends State<ChapterViewList>
     Widget _r;
     try {
       _r = GestureDetector(
-          onHorizontalDragEnd: (detail) {
-            DragEndDetails d = detail;
-            if (d.primaryVelocity < 0)
-              setState(() {
-                this.widget.pst.readingCompleteHandler(book);
-              });
-            else if (d.primaryVelocity > 0) {
-              setState(() {
-                if (book.getBookstate.currentChapter.index > 0)
-                  book.getBookstate.currentChapter = book.menu[book.getBookstate.currentChapter.index - 1];
-              });
-
-              // if (ListenerBox.instance['bk'].value.selected > 0) {
-              //   ListenerBox.instance['bk'].value.selected -= 1;
-              //   (ListenerBox.instance['bk'].value as BookData).getpagedata();
-              // }
-            }
-          },
+          onHorizontalDragEnd: (detail) =>
+              setState(() => this.widget.pst.readingCompleteHandler(detail.primaryVelocity)),
           child: Container(
               child: DraggableScrollbar(
                   controller: this.widget.controller,

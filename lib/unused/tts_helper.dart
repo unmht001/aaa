@@ -3,6 +3,20 @@
 
 // import "data_type_support.dart";
 
+// initsdkdata() async {
+//   await Future.delayed(Duration(milliseconds: 100));
+//   for (var i = 0; i < 81; i++) {
+//     sdkdata.add([
+//       [1, 2, 3, 4, 5, 6, 7, 8, 9],
+//       0,
+//       false
+//     ]);
+//   }
+//   log("sdkdata init [for] over");
+//   await Future.delayed(Duration(milliseconds: 100));
+
+//   print("sdkdata init ok");
+// }
 
 // class NoverMainPage extends StatelessWidget {
 //   final Function getmenudata;

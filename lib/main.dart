@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'init_fun.dart';
-import 'pck/main_page.dart';
 
+import 'init_fun.dart';
 import 'data.dart';
+
 import 'pck/data_type_support.dart';
 import 'pck/content_page.dart';
 import 'pck/menu_page.dart';
+import 'pck/main_page.dart';
 import 'pck/event_gun.dart';
 
 EventGun gun = new EventGun();
@@ -14,7 +15,7 @@ MyListener initok = new MyListener();
 // bool initok = false;
 void main() async {
   initok.value = false;
-  init(gun).then(( x) => initok.value = true);
+  init(gun).then((x) => initok.value = true);
   try {
     runApp(MyApp());
   } catch (e) {
@@ -34,10 +35,27 @@ class _MyAppState extends State<MyApp> {
     if (!initok.value) {
       initok.afterSetter = () => setState(() {});
       return MaterialApp(
-          theme: ThemeData(primarySwatch: Colors.blue), home: Scaffold(body: Center(child: Text(Appdata. loadingtext))));
+          theme: ThemeData(primarySwatch: Colors.blue), home: Scaffold(body: Center(child: Text(Appdata.loadingtext))));
     } else
       return MaterialApp(theme: ThemeData(primarySwatch: Colors.blue), home: MyHomePage());
   }
+}
+
+mixin HomePageMixin on State<MyHomePage> {
+  PageController _pctler;
+  DateTime _lastPressAt;
+  checkOnWillPop() {
+    var f = (_lastPressAt != null &&
+        _pctler.page <= _pctler.initialPage &&
+        DateTime.now().difference(_lastPressAt) < Duration(seconds: 1));
+
+    _lastPressAt = DateTime.now();
+    if (!f) _pctler.previousPage(duration: Duration(milliseconds: 300), curve: Curves.ease);
+    return f;
+  }
+
+  void openpage([page = 1]) =>
+      this._pctler.animateToPage(page, duration: Duration(milliseconds: 300), curve: Curves.ease);
 }
 
 class MyHomePage extends StatefulWidget {
@@ -47,31 +65,23 @@ class MyHomePage extends StatefulWidget {
   _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin {
+class _MyHomePageState extends State<MyHomePage>
+    with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin, HomePageMixin {
   @override
   bool get wantKeepAlive => true;
   PageController _pctler;
   ScrollController _menuCtr;
   ScrollController _chapterCtr;
-  DateTime _lastPressAt;
-  checkOnWillPop() {
-    var f = (_lastPressAt == null ||
-            _pctler.page > _pctler.initialPage ||
-            DateTime.now().difference(_lastPressAt) > Duration(seconds: 1))
-        ? false
-        : true;
-
-    _lastPressAt = DateTime.now();
-    if (!f) _pctler.previousPage(duration: Duration(milliseconds: 300), curve: Curves.ease);
-    return f;
-  }
 
   @override
   Widget build(BuildContext context) {
     var _tbs = [
-      PageOne(itemonpress: showMenuPage),
-      MenuPage(itemonpress: showChapterPage, controller: this._menuCtr),
-      ChapterPage(controller: this._chapterCtr, pageReadOverAction: toNextChapter)
+      PageOne(itemonpress: (Book bk) {
+        BookMark.currentBook = bk;
+        openpage(1);
+      }),
+      MenuPage(itemonpress: (Book bk) => openpage(2), controller: this._menuCtr),
+      ChapterPage(controller: this._chapterCtr)
     ];
     super.build(context);
     return WillPopScope(
@@ -85,7 +95,7 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
 
   @override
   void dispose() {
-    Appdata.instance.pageController=null;
+    Appdata.instance.pageController = null;
     this._pctler.dispose();
     this._menuCtr.dispose();
     this._chapterCtr.dispose();
@@ -95,30 +105,9 @@ class _MyHomePageState extends State<MyHomePage> with AutomaticKeepAliveClientMi
   @override
   void initState() {
     super.initState();
-    
     this._pctler = PageController(initialPage: 0);
-    Appdata.instance.pageController=_pctler;
+    Appdata.instance.pageController = _pctler;
     this._menuCtr = ScrollController(initialScrollOffset: 1.0, keepScrollOffset: true);
     this._chapterCtr = ScrollController(initialScrollOffset: 0.0, keepScrollOffset: true);
   }
-
-  void openpage(Book bk, {int page: 1}) =>
-      this._pctler.animateToPage(page, duration: Duration(milliseconds: 300), curve: Curves.ease);
-
-  showMenuPage(Book bk) {
-    BookMark.currentBook = bk;
-    openpage(bk, page: 1);
-  }
-
-  showChapterPage(Book bk) => openpage(bk, page: 2);
-
-  toNextChapter(Book bk)  {
-    if( bk.getBookstate.currentChapter.index<bk.menu.length-1)
-    bk.getBookstate.currentChapter=bk.menu[bk.getBookstate.currentChapter.index+1];
-  }
 }
-
-
-
-
-
