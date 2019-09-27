@@ -241,7 +241,7 @@ class Bookcase {
   static Bookcase _instance;
   static Bookcase _getInstance() => _instance ?? (_instance = Bookcase._internal());
 
-  static init(List<Map> bookdata, Map sitedata, String siteUID) {
+  static init(List bookdata, Map sitedata, String siteUID) {
     _getInstance();
     BookMark.instance;
     for (var item in sitedata.keys) siteStore[item] = Site.fromMap(sitedata[item]);

@@ -17,9 +17,9 @@ class Appdata {
   static String loadingtext = "Loading...";
   List navs;
   Mytts8 tts;
-  List<Map<String, Object>> bks;
-  Map<String, Map> sitedata;
-  PageController  pageController;
+  List bks;
+  Map sitedata;
+  PageController pageController;
 
   Appdata._internal() {
     navs = [
@@ -30,7 +30,15 @@ class Appdata {
     ];
 
     tts = Mytts8();
-    bks = [
+  }
+}
+
+Text stext(String s) =>
+    Text(s, style: TextStyle(decoration: TextDecoration.none, fontSize: 13, color: Colors.grey[800]));
+
+getDefault() {
+  return {
+    "bookdata": [
       {"id": 1, "name": "剑来", "bookBaseUrl": "jianlai/", "author": "烽火戏诸侯", "uid": "RrnyYWAzzT", "site": "ywXSyXTKVO"},
       {
         "id": 2,
@@ -65,9 +73,8 @@ class Appdata {
         "uid": "LVHOSKvvCb",
         "site": "ywXSyXTKVO"
       },
-    ];
-
-    sitedata = {
+    ],
+    "sitedata": {
       "ywXSyXTKVO": {
         "siteUID": "ywXSyXTKVO",
         "siteName": "书迷楼",
@@ -79,9 +86,6 @@ class Appdata {
         "contentPatten": "</div>[^>]+?(<p>[\\s\\S]+?</p>)",
         "contentSoupTap": '#content',
       }
-    };
-  }
+    }
+  };
 }
-
-Text stext(String s) =>
-    Text(s, style: TextStyle(decoration: TextDecoration.none, fontSize: 13, color: Colors.grey[800]));
