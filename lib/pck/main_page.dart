@@ -1,4 +1,5 @@
 // import 'package:aaa/init_fun.dart';
+import 'package:aaa/pck/setting_page.dart';
 import 'package:flutter/material.dart';
 import 'Refresh_Provider.dart';
 import "main_page_shaixuan.dart";
@@ -39,9 +40,11 @@ class _PageOneState extends State<PageOne> with AutomaticKeepAliveClientMixin,  
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
+        
         //page 1
         body: TabBarView(
-            controller: _controller, children: <Widget>[bookcase(context), Container(), Container(), Container()]),
+            physics: NeverScrollableScrollPhysics(),
+            controller: _controller, children: <Widget>[bookcase(context), ContentSettingPage(), Container(), Container()]),
         bottomNavigationBar: BottomNavigationBar(
             type: BottomNavigationBarType.fixed,
             iconSize: 24.0,

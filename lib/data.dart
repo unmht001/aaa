@@ -20,11 +20,13 @@ class Appdata {
   List bks;
   Map sitedata;
   PageController pageController;
+  static double width;
+  static double height;
 
   Appdata._internal() {
     navs = [
       NavData("书架", Icons.book),
-      NavData("精选", Icons.bookmark),
+      NavData("来源", Icons.bookmark),
       NavData("发现", Icons.search),
       NavData("我", Icons.person)
     ];

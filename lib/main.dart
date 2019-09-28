@@ -32,6 +32,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
+
     if (!initok.value) {
       initok.afterSetter = () => setState(() {});
       return MaterialApp(
@@ -84,6 +85,9 @@ class _MyHomePageState extends State<MyHomePage>
       ChapterPage(controller: this._chapterCtr)
     ];
     super.build(context);
+    var size=MediaQuery.of(context).size;
+    Appdata.width=size.width;
+    Appdata.height=size.height;
     return WillPopScope(
         onWillPop: () async => checkOnWillPop(),
         child: PageView.builder(

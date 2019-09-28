@@ -1,6 +1,5 @@
 // import 'dart:async';
 
-
 import "dart:math";
 import 'package:aaa/pck/get_string.dart';
 // import 'package:aaa/pck/map_support.dart';
@@ -18,7 +17,6 @@ String getUid(int length) {
   }
   return left;
 }
-
 
 class MyListener {
   dynamic _v = "初始";
@@ -42,9 +40,6 @@ class MyListener {
   }
 }
 
-
-
-
 class NavData {
   String tt;
   IconData icon;
@@ -62,8 +57,6 @@ class Blockcelldata {
   double ftsz;
   Blockcelldata(this.tt, this.count, {this.ftsz: 13, this.tcolor: Colors.white});
 }
-
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -179,6 +172,23 @@ class Book {
   String lastupdatepagename;
   String uid;
 
+  toMap() {
+    return {
+      "id": this.id,
+      "uid": this.uid,
+      "author": this.author,
+      "pic": this.pic,
+      "progress": this.progress,
+      "state": this.state,
+      "lastupdatepagename": this.lastupdatepagename,
+      "lastupdatetime": this.lastupdatetime
+    };
+  }
+
+  toString() {
+    return toMap().toString();
+  }
+
   // String site;
 
   List<Chapter> menu = [];
@@ -280,6 +290,20 @@ class Site {
     this.contentSoupTap = mp["contentSoupTap"];
     this.contentPatten = mp["contentPatten"];
   }
+  toMap() => {
+        "siteName": this.siteName,
+        "siteUID": this.siteUID,
+        "siteBaseUrl": this.siteBaseUrl,
+        "menuUrl": this.menuUrl,
+        "menuSoupTag": this.menuSoupTag,
+        "menuPattan": this.menuPattan,
+        "siteCharset": this.siteCharset,
+        "contentSoupTap": this.contentSoupTap,
+        "contentPatten": this.contentPatten,
+        "bookBaseUrls": this.bookBaseUrls
+      };
+  toString() => toMap.toString();
+
   Map<String, String> bookBaseUrls = {};
 }
 
