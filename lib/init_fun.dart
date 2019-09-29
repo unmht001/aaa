@@ -125,10 +125,10 @@ init(EventGun ff) async {
   } else {
     var sss = await StateInit.readDataFromJson();
     bool flag = false;
-    if (sss == null) {
-      sss = StateInit.readDataFromDefault();
+    // if (sss == null) {
+      sss = await StateInit.readDataFromDefault();
       flag = true;
-    }
+    // }
     Appdata.instance.bks = sss["bookdata"];
     Appdata.instance.sitedata = sss["sitedata"];
     if (flag) await StateInit.saveDataToJson(sss);

@@ -62,7 +62,7 @@ class PageOp {
         var soup = Beautifulsoup(charsetS(response, charset: book.getSite.siteCharset).toString());
         var s1 = soup(book.getSite.menuSoupTag);
         var s2 = RegExp(book.getSite.menuPattan, multiLine: true).allMatches(s1.outerHtml);
-        var s12 = RegExp("<a\\shref=\"(.+?)\">(.+?)</a>", multiLine: true);
+        var s12 = RegExp("<a[\\s\\S]+?href=\"(.+?)\">(.+?)</a>", multiLine: true);
         var _r;
 
         assert(s2 != null, "没有找到本书");
@@ -71,6 +71,7 @@ class PageOp {
         _ret = s2
             .map((vs) => [(_r = s12.firstMatch(vs.group(1).toString())).group(1).toString(), _r.group(2).toString()])
             .toList();
+        // print(_ret);
       } else
         _ret = "失败代码: ${response.statusCode}.";
     } catch (e) {

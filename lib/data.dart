@@ -65,8 +65,16 @@ getDefault() {
         "author": "大眼珠子",
         "uid": "BkXSEJlnaM",
         "site": "ywXSyXTKVO"
+      }, 
+            {
+        "id": 5,
+        "name": "无限猎场",
+        "bookBaseUrl": "cview/100/100587/",
+        "author": "不知道",
+        "uid": "JoGeGWNgUc",
+        "site": "cMqCQqtlEQ"
       },
-      {"id": 5, "name": "第一序列", "bookBaseUrl": "dixulie/", "author": "不知道", "uid": "altdlfEtGl", "site": "ywXSyXTKVO"},
+
       {
         "id": 6,
         "name": "明朝败家子",
@@ -74,6 +82,14 @@ getDefault() {
         "author": "不知道",
         "uid": "LVHOSKvvCb",
         "site": "ywXSyXTKVO"
+      },
+      {
+        "id": 7,
+        "name": "归向",
+        "bookBaseUrl": "cview/372/372593/",
+        "author": "p皮划艇",
+        "uid": "BQHNPOKrzd",
+        "site": "cMqCQqtlEQ"
       },
     ],
     "sitedata": {
@@ -86,6 +102,17 @@ getDefault() {
         "menuPattan": "(<li.+?/li>)",
         "siteCharset": 'gbk',
         "contentPatten": "</div>[^>]+?(<p>[\\s\\S]+?</p>)",
+        "contentSoupTap": '#content',
+      },
+      "cMqCQqtlEQ": {
+        "siteUID": "cMqCQqtlEQ",
+        "siteName": "啃文书库",
+        "siteBaseUrl": "https://www.kenwen.com/",
+        "menuUrl": "",
+        "menuSoupTag": "div#list",
+        "menuPattan": "<dd>([\\s\\S]+?)</dd>",
+        "siteCharset": 'utf8',
+        "contentPatten": "[\\S\\s]*",
         "contentSoupTap": '#content',
       }
     }
