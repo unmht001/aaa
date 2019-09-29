@@ -1,7 +1,12 @@
 // import 'dart:convert';
 
+// import 'dart:convert';
+// import 'dart:io';
+
 import 'package:aaa/data.dart';
+// import 'package:dio/dio.dart';
 import "package:flutter/material.dart";
+// import 'package:gbk2utf8/gbk2utf8.dart';
 
 import 'data_type_support.dart';
 
@@ -24,11 +29,13 @@ class ContentSettingPageData {
   static double get w1 => 100;
   static double get w2 => (Appdata.width ?? 440) - 40 - w1;
   static double get h1 => 30;
-  static double get h2 => ((Appdata.height ?? 680) - 40 - h1 * 2-90) / 2;
+  static double get h2 => ((Appdata.height ?? 680) - 40 - h1 * 2 - 90) / 2;
 
   static Function bookListRefresh;
   static Function siteDetailRefresh;
   static Function bookDetailRefresh;
+
+
 }
 
 class ContentSettingPage extends StatelessWidget {

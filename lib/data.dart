@@ -27,7 +27,7 @@ class Appdata {
     navs = [
       NavData("书架", Icons.book),
       NavData("来源", Icons.bookmark),
-      NavData("发现", Icons.search),
+      NavData("正则", Icons.search),
       NavData("我", Icons.person)
     ];
 
