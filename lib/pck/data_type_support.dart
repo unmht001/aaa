@@ -102,8 +102,12 @@ class SectionSheet extends AbstractChain<SectionSheet> {
   disHighLight() => isHighlight = false;
 
   static SectionSheet getSectionSheetChain(String text) {
-    var s = text.split("\n");
-    s.removeWhere((x) => x == "");
+    var a = text.replaceAll("<br>", "\n");
+    a = a.replaceAll("<BR>", "\n");
+    a = a.replaceAll("\t", "\n");
+    var s = a.split(new RegExp(r"\n|\s\s"));
+
+    s.removeWhere((x) => x == " " * x.length || x.isEmpty);
     if (s.isEmpty)
       return null;
     else {
@@ -111,7 +115,7 @@ class SectionSheet extends AbstractChain<SectionSheet> {
       SectionSheet ch2 = ch1;
 
       for (var item in s) {
-        ch2.text = item;
+        ch2.text = "  " + item;
         ch2 = ch2.born(SectionSheet());
       }
       ch2.father.son = null;
@@ -330,8 +334,11 @@ class BookMark {
   static get instance => _getInstance();
   static MyListener menuLoadedLsn = MyListener();
   static MyListener pageLoadedLsn = MyListener();
+  static bool chapterPageNeedToRefresh = false;
+  static Function chapterPageRefresher;
+  static bool menuPageNeedToRefresh = false;
+  static Function menuPageRefresher;
 }
 
-
-// 
-// 
+//
+//

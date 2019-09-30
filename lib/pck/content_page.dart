@@ -97,11 +97,24 @@ class _ChapterViewListState extends State<ChapterViewList>
   SectionSheet get thisFireS => this.widget.book.getBookstate.currentChapter.contentStart;
 
   @override
+  void initState() {
+    super.initState();
+
+    BookMark.chapterPageRefresher = () {
+      if (BookMark.chapterPageNeedToRefresh){
+        BookMark.chapterPageNeedToRefresh=false;
+        Future.delayed(Duration(seconds: 1), () => setState(() {}));
+      }
+      
+    };
+  }
+
+  @override
   bool get wantKeepAlive => true;
   @override
   pagemove(SectionSheet sss) {
     var p = Appdata.instance.pageController?.page;
-    if (p == null || p < 1.5 || p > 2.5)
+    if (p != null && p > 1.5 && p < 2.5)
       this.widget.controller.position.moveTo(this.widget.controller.position.pixels + sss.height);
   }
 

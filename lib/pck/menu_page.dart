@@ -29,19 +29,28 @@ class MenuViewList extends StatefulWidget with RefreshProviderSTF {
   _MenuViewListState createState() => _MenuViewListState();
 }
 
-class _MenuViewListState extends State<MenuViewList> with RefreshProviderState {
+class _MenuViewListState extends State<MenuViewList> with RefreshProviderState, AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   List get menu => BookMark.currentBook.menu;
   int get selected => (BookMark.currentBook.getBookstate.currentChapter?.index) ?? 0;
   bool built = false;
   @override
   void initState() {
     super.initState();
+    BookMark.menuPageRefresher = () {
+      if (BookMark.menuPageNeedToRefresh) {
+        BookMark.menuPageNeedToRefresh = false;
+        Future.delayed(Duration(milliseconds: 200), () => setState(() {}));
+      }
+    };
     // BookMark.menuPageRefresher = () => setState(() {});
   }
 
   @override
   void dispose() {
-    // if (BookMark.menuPageRefresher == () => setState(() {})) BookMark.menuPageRefresher = () {};
+    BookMark.menuPageRefresher = () {};
     super.dispose();
   }
 
@@ -73,12 +82,13 @@ class _MenuViewListState extends State<MenuViewList> with RefreshProviderState {
           reverse: false,
           controller: this.widget.controller,
           itemCount: menu.length,
-          itemBuilder: (context, index) => makeItem(context,  menu.length - 1 - index));
+          itemBuilder: (context, index) => makeItem(context, menu.length - 1 - index));
     return _r;
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     print("build menu");
     Widget _r;
     try {

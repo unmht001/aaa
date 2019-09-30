@@ -32,7 +32,6 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
-
     if (!initok.value) {
       initok.afterSetter = () => setState(() {});
       return MaterialApp(
@@ -80,14 +79,22 @@ class _MyHomePageState extends State<MyHomePage>
       PageOne(itemonpress: (Book bk) {
         BookMark.currentBook = bk;
         openpage(1);
+        BookMark.menuPageNeedToRefresh = true;
+        (BookMark.menuPageRefresher ?? () {})();
       }),
-      MenuPage(itemonpress: (Book bk) => openpage(2), controller: this._menuCtr),
+      MenuPage(
+          controller: this._menuCtr,
+          itemonpress: (Book bk) {
+            openpage(2);
+            BookMark.chapterPageNeedToRefresh = true;
+            (BookMark.chapterPageRefresher ?? () {})();
+          }),
       ChapterPage(controller: this._chapterCtr)
     ];
     super.build(context);
-    var size=MediaQuery.of(context).size;
-    Appdata.width=size.width;
-    Appdata.height=size.height;
+    var size = MediaQuery.of(context).size;
+    Appdata.width = size.width;
+    Appdata.height = size.height;
     return WillPopScope(
         onWillPop: () async => checkOnWillPop(),
         child: PageView.builder(
