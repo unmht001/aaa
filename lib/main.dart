@@ -66,12 +66,31 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage>
-    with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin, HomePageMixin {
+    with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin, HomePageMixin, WidgetsBindingObserver {
   @override
   bool get wantKeepAlive => true;
   PageController _pctler;
   ScrollController _menuCtr;
   ScrollController _chapterCtr;
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    print("--" + state.toString());
+    switch (state) {
+      case AppLifecycleState.inactive: // 处于这种状态的应用程序应该假设它们可能在任何时候暂停。
+      Appdata.isAppOnBack=true;
+        break;
+      case AppLifecycleState.resumed: // 应用程序可见，前台
+        Appdata.isAppOnBack=true;
+        break;
+      case AppLifecycleState.paused: // 应用程序不可见，后台
+      Appdata.isAppOnBack=false;
+        break;
+      case AppLifecycleState.suspending: // 申请将暂时暂停
+      Appdata.isAppOnBack=false;
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

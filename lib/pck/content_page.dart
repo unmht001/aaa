@@ -24,13 +24,14 @@ mixin ReaderState<T extends Reader> on State<T> {
   Book get book => this.widget.book;
   ReaderData get pst => this.widget.pst;
   Mytts8 get tts => this.widget.tts;
-  // GlobalKey _gk;
   pagemove(SectionSheet sss);
+
+  refresh([Function fn]) {}
 
   continueReading() async {
     if (await tts.isLanguageAvailable('zh-CN'))
-      setState(() {
-        tts.setCompletionHandler(() => setState(() async {
+      refresh(() {
+        tts.setCompletionHandler(() => refresh(() async {
               if (pst.currentHL.son != null) {
                 pst.currentHL.disHighLight();
                 pst.currentHL = pst.currentHL.son;
@@ -101,11 +102,10 @@ class _ChapterViewListState extends State<ChapterViewList>
     super.initState();
 
     BookMark.chapterPageRefresher = () {
-      if (BookMark.chapterPageNeedToRefresh){
-        BookMark.chapterPageNeedToRefresh=false;
-        Future.delayed(Duration(seconds: 1), () => setState(() {}));
+      if (BookMark.chapterPageNeedToRefresh) {
+        BookMark.chapterPageNeedToRefresh = false;
+        Future.delayed(Duration(seconds: 1), () => refresh());
       }
-      
     };
   }
 
@@ -125,26 +125,27 @@ class _ChapterViewListState extends State<ChapterViewList>
         padding: EdgeInsets.all(5),
         child: GestureDetector(
             child: Text(sss.text, softWrap: true, style: TextStyle(fontWeight: FontWeight.w500, fontSize: 20.0)),
-            onTap: () => setState(() {
-                  this.widget.pst.currentHL = sss;
-                  this.widget.pst.currentHL.highLight();
-                  smartReading();
-                })));
+            onTap: () {
+              this.widget.pst.currentHL = sss;
+              this.widget.pst.currentHL.highLight();
+              smartReading();
+              refresh();
+            }));
   }
 
-  toNextChapter() {
-    this
-        .widget
-        .chapter
-        .initContent()
-        .then((x) => Future.delayed(
-            Duration(seconds: 1),
-            () => setState(() {
-                  this.widget.pst.currentHL = book.getBookstate.currentChapter.contentStart;
-                  print("initContent over : $x");
-                })))
-        .then((x) => startReading())
-        .then((x) => this.widget.controller.jumpTo(0));
+  static nullAction() {}
+
+  @override
+  refresh([Function fn = nullAction]) {
+    if (!Appdata.isAppOnBack && this.mounted && Appdata.instance.pageController.page == 2.0) setState(fn);
+  }
+
+  toNextChapter() async {
+    await this.widget.chapter.initContent();
+    await Future.delayed(
+        Duration(seconds: 1), refresh(() => this.widget.pst.currentHL = book.getBookstate.currentChapter.contentStart));
+    await (Appdata.isReadingMode ? startReading : () async {})();
+    if (!Appdata.isAppOnBack) this.widget.controller.jumpTo(0);
   }
 
   @override
@@ -155,8 +156,7 @@ class _ChapterViewListState extends State<ChapterViewList>
     Widget _r;
     try {
       _r = GestureDetector(
-          onHorizontalDragEnd: (detail) =>
-              setState(() => this.widget.pst.readingCompleteHandler(detail.primaryVelocity)),
+          onHorizontalDragEnd: (detail) => refresh(this.widget.pst.readingCompleteHandler(detail.primaryVelocity)),
           child: Container(
               child: DraggableScrollbar(
                   controller: this.widget.controller,
@@ -178,13 +178,13 @@ class _ChapterViewListState extends State<ChapterViewList>
         toNextChapter();
       else if (this.widget.chapter.isloaded) {
         if (this.widget.pst.currentHL == null || this.widget.pst.currentHL.first != this.widget.chapter.contentStart) {
-          this.widget.pst.currentHL = this.widget.chapter.contentStart;
-          this.widget.pst.currentHL.highLight();
-          setState(() {});
+          refresh(() {
+            this.widget.pst.currentHL = this.widget.chapter.contentStart;
+            this.widget.pst.currentHL.highLight();
+          });
         }
       } else if (this.widget.pst.currentHL.isHighlight == false) {
-        this.widget.pst.currentHL.highLight();
-        setState(() {});
+        refresh(() => this.widget.pst.currentHL.highLight());
       }
     } catch (e) {
       _r = Container(child: Text(e.toString(), softWrap: true));

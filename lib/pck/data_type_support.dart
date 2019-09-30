@@ -338,6 +338,7 @@ class BookMark {
   static Function chapterPageRefresher;
   static bool menuPageNeedToRefresh = false;
   static Function menuPageRefresher;
+  
 }
 
 //

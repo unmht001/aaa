@@ -32,7 +32,10 @@ class Appdata {
     ];
 
     tts = Mytts8();
+
   }
+  static bool isReadingMode=false;
+  static bool isAppOnBack=false;
 }
 
 Text stext(String s) =>
