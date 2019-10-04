@@ -1,4 +1,5 @@
 // import 'package:aaa/init_fun.dart';
+import 'package:aaa/pck/data_show_page.dart';
 import 'package:aaa/pck/regexp_test.dart';
 import 'package:aaa/pck/setting_page.dart';
 import 'package:flutter/material.dart';
@@ -45,7 +46,7 @@ class _PageOneState extends State<PageOne> with AutomaticKeepAliveClientMixin,  
         //page 1
         body: TabBarView(
             physics: NeverScrollableScrollPhysics(),
-            controller: _controller, children: <Widget>[bookcase(context), ContentSettingPage(), RegexpTestPage(), Container()]),
+            controller: _controller, children: <Widget>[bookcase(context), ContentSettingPage(), RegexpTestPage(), DataShowPage()]),
         bottomNavigationBar: BottomNavigationBar(
             type: BottomNavigationBarType.fixed,
             iconSize: 24.0,

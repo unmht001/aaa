@@ -2,6 +2,8 @@
 
 import "dart:math";
 import 'package:aaa/pck/get_string.dart';
+import 'package:aaa/pck/support/d_s_f_w.dart';
+// import 'package:flutter/foundation.dart';
 // import 'package:aaa/pck/map_support.dart';
 import 'chain_support.dart';
 // import 'package:aaa/pck/progress.dart';
@@ -246,14 +248,21 @@ class BookState {
 }
 
 class Bookcase {
-  static Map<String, Book> bookStore = {};
-  static Map<String, Site> siteStore = {};
-
+  //Bookcase define --------------------
   Bookcase._internal();
-  factory Bookcase() => _getInstance();
-
   static Bookcase _instance;
   static Bookcase _getInstance() => _instance ?? (_instance = Bookcase._internal());
+  factory Bookcase() => _getInstance();
+  static Bookcase get instance => _getInstance();
+  //Bookcase define over ----------------
+
+  //data state fn
+  static get data => App.instance.bookcase["data"] ?? (App.instance.bookcase["data"] = {});
+  static get state => App.instance.bookcase["state"] ?? (App.instance.bookcase["state"] = {});
+  static get fn => App.instance.bookcase["fn"] ?? (App.instance.bookcase["fn"] = {});
+
+  static Map<String, Book> get bookStore => data["bookStore"] ?? (data["bookStore"] = new Map<String, Book>());
+  static Map<String, Site> get siteStore => data["siteStore"] ?? (data["siteStore"] = new Map<String, Site>());
 
   static init(List bookdata, Map sitedata, String siteUID) {
     _getInstance();
@@ -312,34 +321,70 @@ class Site {
 }
 
 class BookMark {
-  static Function currentBookAfterSetForMenu;
-  static Function currentBookAfterSetForPage;
-  static Book _currentBook;
-  static Book get currentBook => _currentBook;
-  static set currentBook(Book bk) {
-    _currentBook = bk;
-    (currentBookAfterSetForMenu ?? () {})();
-    (currentBookAfterSetForPage ?? () {})();
-  }
-
-  // static Function menuPageRefresher;
-
-  static Map<String, BookState> bookState = {};
-
+  //factory
   BookMark._internal();
-  factory BookMark() => _getInstance();
-
   static BookMark _instance;
   static BookMark _getInstance() => _instance ?? (_instance = BookMark._internal());
-  static get instance => _getInstance();
-  static MyListener menuLoadedLsn = MyListener();
-  static MyListener pageLoadedLsn = MyListener();
-  static bool chapterPageNeedToRefresh = false;
-  static Function chapterPageRefresher;
-  static bool menuPageNeedToRefresh = false;
-  static Function menuPageRefresher;
-  
+  factory BookMark() => _getInstance();
+  static Map<String, BookState> bookState = {};
+  static BookMark get instance => _getInstance();
+
+  //data state fn
+  static get data => App.instance.bookmark["data"] ?? (App.instance.bookmark["data"] = {});
+  static get state => App.instance.bookmark["state"] ?? (App.instance.bookmark["state"] = {});
+  static get fn => App.instance.bookmark["fn"] ?? (App.instance.bookmark["fn"] = {});
+
+  //currentBook
+  static Book get currentBook => data["currentBook"];
+  static set currentBook(Book v) {
+    data["currentBook"] = v;
+    currentBookAfterSetterForMenu(v);
+    currentBookAfterSetterForPage(v);
+  }
+
+  static get currentBookAfterSetterForMenu =>
+      fn["currentBookAfterSetterForMenu"] ?? (fn["currentBookAfterSetterForMenu"] = ([x]) {});
+  static set currentBookAfterSetterForMenu(Function v) => fn["currentBookAfterSetterForMenu"] = v;
+  static get currentBookAfterSetterForPage =>
+      fn["currentBookAfterSetterForPage"] ?? (fn["currentBookAfterSetterForPage"] = ([x]) {});
+  static set currentBookAfterSetterForPage(Function v) => fn["currentBookAfterSetterForPage"] = v;
+
+  //state
+  static get chapterPageRefresher => fn["chapterPageRefresher"] ?? ([x]) {};
+  static set chapterPageRefresher(Function v) => fn["chapterPageRefresher"] = v;
+
+  static bool get chapterPageNeedToRefresh =>
+      state["chapterPageNeedToRefresh"] ?? (state["chapterPageNeedToRefresh"] = false);
+  static set chapterPageNeedToRefresh(bool v) {
+    state["chapterPageNeedToRefresh"] = v;
+    chapterPageRefresher(v);
+  }
+
+  static get menuPageRefresher => fn["menuPageRefresher"] ?? ([x]) {};
+  static set menuPageRefresher(Function v) => fn["menuPageRefresher"] = v;
+  static bool get menuPageNeedToRefresh => state["menuPageNeedToRefresh"] ?? (state["menuPageNeedToRefresh"] = false);
+  static set menuPageNeedToRefresh(bool v) {
+    state["menuPageNeedToRefresh"] = v;
+    menuPageRefresher(v);
+  }
 }
 
-//
-//
+class App with Dsfw {
+  static App _instance;
+  App._internal();
+  static App _getInstance() => _instance ?? (_instance = App._internal());
+  factory App() => _getInstance();
+  static App get instance => _getInstance();
+
+  static Map _database = {};
+  @override
+  Map get database => _database;
+  get bookmark => data["bookmark"] ?? (data["bookmark"] = {});
+  // set bookmark(v) => data["bookmark"] = v;
+
+  get appState => state["appState"] ?? (state["appState"] = {});
+  // set appState(v) => state["appState"] = v;
+
+  get bookcase => data["bookcase"] ?? (data["bookcase"] = {});
+  // set bookcase(v) => data["bookcase"] = v;
+}

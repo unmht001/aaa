@@ -55,7 +55,7 @@ class StateInit {
     }
   }
 
-  static readDataFromDefault() async => getDefault();
+  static readDataFromDefault() async =>await  getDefault();
 
   static readDataFromSetting() async => {"bookdata": Appdata.instance.bks, "sitedata": Appdata.instance.sitedata};
 
