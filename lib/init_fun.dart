@@ -6,16 +6,14 @@ import 'dart:io';
 // import 'dart:convert';
 import 'package:path_provider/path_provider.dart';
 
-import 'pck/event_gun.dart';
+// import 'pck/event_gun.dart';
 
 import 'pck/data_type_support.dart';
 import 'data.dart';
+import 'pck/support/logS.dart';
+import 'pck/support/queue_roadsignal_eventgun.dart';
 
-log(String st, [num tabs = 0]) {
-  num t = tabs;
-  print("    " * t + st);
-  Appdata.loadingtext += ("\n" + "st");
-}
+
 
 class StateInit {
   static StateInit _instance;
@@ -125,10 +123,10 @@ init(EventGun ff) async {
   } else {
     var sss = await StateInit.readDataFromJson();
     bool flag = false;
-    // if (sss == null) {
+    if (sss == null) {
       sss = await StateInit.readDataFromDefault();
       flag = true;
-    // }
+    }
     Appdata.instance.bks = sss["bookdata"];
     Appdata.instance.sitedata = sss["sitedata"];
     if (flag) await StateInit.saveDataToJson(sss);

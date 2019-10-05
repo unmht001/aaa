@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:aaa/pck/support/logS.dart';
 import 'package:beautifulsoup/beautifulsoup.dart';
 import "package:dio/dio.dart";
 
 import 'package:gbk2utf8/gbk2utf8.dart';
 import 'data_type_support.dart';
-// import "value_listener.dart";
 
 class PageOp {
   static charsetS(Response rp, {String charset: "utf8"}) {
@@ -42,9 +42,10 @@ class PageOp {
       } else
         r = "Request failed with status: ${response.statusCode}.";
     } catch (e) {
-      r = "getpagedta error" + e.toString();
-      print("getpage" + r);
+      r = "getpagedta error:" + e.toString();
+      log("getpage:" + r);
     }
+    log("getpage: over");
     return r;
   }
 
@@ -72,10 +73,14 @@ class PageOp {
             .map((vs) => [(_r = s12.firstMatch(vs.group(1).toString())).group(1).toString(), _r.group(2).toString()])
             .toList();
         // print(_ret);
-      } else
+      } else{
         _ret = "失败代码: ${response.statusCode}.";
+        log("getmenudata 失败"+ _ret.toString());
+      }
+        
     } catch (e) {
       _ret = e.toString();
+      log("getmenudata error"+_ret);
     }
     return _ret;
   }

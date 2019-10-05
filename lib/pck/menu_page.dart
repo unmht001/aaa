@@ -1,6 +1,8 @@
+import 'package:aaa/pck/support/logS.dart';
 import 'package:draggable_scrollbar/draggable_scrollbar.dart';
 import 'package:flutter/material.dart';
 
+import '../data.dart';
 import 'Refresh_Provider.dart';
 import 'data_type_support.dart';
 // import 'progress.dart';
@@ -36,22 +38,38 @@ class _MenuViewListState extends State<MenuViewList> with RefreshProviderState, 
   List get menu => BookMark.currentBook.menu;
   int get selected => (BookMark.currentBook.getBookstate.currentChapter?.index) ?? 0;
   bool built = false;
+
   @override
   void initState() {
     super.initState();
-    BookMark.menuPageRefresher = () {
-      if (BookMark.menuPageNeedToRefresh) {
-        BookMark.menuPageNeedToRefresh = false;
-        Future.delayed(Duration(milliseconds: 200), () => setState(() {}));
-      }
+    BookMark.menuPageRefresher = ([x]) {
+      log("menuPageRefresher");
+      if (BookMark.menuPageNeedToRefresh && refresh()) BookMark.menuPageNeedToRefresh = false;
     };
-    // BookMark.menuPageRefresher = () => setState(() {});
   }
 
   @override
   void dispose() {
-    BookMark.menuPageRefresher = () {};
+    BookMark.menuPageRefresher = ([x]) {};
     super.dispose();
+  }
+
+  refresh([Function fn]) {
+    if (!Appdata.isAppOnBack && this.mounted && Appdata.instance.pageController.page == 1.0) {
+      (null ? ([x]) {} : fn)();
+      setState(() {});
+      return true;
+    }
+    return false;
+  }
+
+  refresh2() async {
+    if (BookMark.menuPageNeedToRefresh) {
+      if (!BookMark.menuPageIsWaitingRefresh) {
+        BookMark.menuPageIsWaitingRefresh = true;
+        
+      }
+    }
   }
 
   Widget makeItem(BuildContext context, int index) {

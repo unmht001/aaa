@@ -7,7 +7,7 @@ import 'pck/data_type_support.dart';
 import 'pck/content_page.dart';
 import 'pck/menu_page.dart';
 import 'pck/main_page.dart';
-import 'pck/event_gun.dart';
+import 'pck/support/queue_roadsignal_eventgun.dart';
 
 EventGun gun = new EventGun();
 MyListener initok = new MyListener();
@@ -50,7 +50,11 @@ mixin HomePageMixin on State<MyHomePage> {
         DateTime.now().difference(_lastPressAt) < Duration(seconds: 1));
 
     _lastPressAt = DateTime.now();
-    if (!f) _pctler.previousPage(duration: Duration(milliseconds: 300), curve: Curves.ease);
+    if (!f) {      
+      _pctler.previousPage(duration: Duration(milliseconds: 300), curve: Curves.ease);
+      if (_pctler.page > 0.5 && _pctler.page<1.5) BookMark.menuPageNeedToRefresh = true;
+    }
+
     return f;
   }
 
@@ -78,16 +82,16 @@ class _MyHomePageState extends State<MyHomePage>
     print("--" + state.toString());
     switch (state) {
       case AppLifecycleState.inactive: // 处于这种状态的应用程序应该假设它们可能在任何时候暂停。
-      Appdata.isAppOnBack=true;
+        Appdata.isAppOnBack = true;
         break;
       case AppLifecycleState.resumed: // 应用程序可见，前台
-        Appdata.isAppOnBack=true;
+        Appdata.isAppOnBack = true;
         break;
       case AppLifecycleState.paused: // 应用程序不可见，后台
-      Appdata.isAppOnBack=false;
+        Appdata.isAppOnBack = false;
         break;
       case AppLifecycleState.suspending: // 申请将暂时暂停
-      Appdata.isAppOnBack=false;
+        Appdata.isAppOnBack = false;
         break;
     }
   }
@@ -99,14 +103,14 @@ class _MyHomePageState extends State<MyHomePage>
         BookMark.currentBook = bk;
         openpage(1);
         BookMark.menuPageNeedToRefresh = true;
-        (BookMark.menuPageRefresher ?? () {})();
+        (BookMark.menuPageRefresher ?? ([x]) {})();
       }),
       MenuPage(
           controller: this._menuCtr,
           itemonpress: (Book bk) {
             openpage(2);
             BookMark.chapterPageNeedToRefresh = true;
-            (BookMark.chapterPageRefresher ?? () {})();
+            (BookMark.chapterPageRefresher ?? ([x]) {})();
           }),
       ChapterPage(controller: this._chapterCtr)
     ];

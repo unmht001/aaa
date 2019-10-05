@@ -1,10 +1,12 @@
 import 'dart:convert';
-import 'dart:io';
+// import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mytts8/mytts8.dart';
 
 import 'pck/data_type_support.dart';
+import 'pck/support/app_data.dart';
 // import './pck/data_type_support.dart';
 // import 'package:mytts8/mytts8.dart';
 
@@ -66,19 +68,12 @@ class Appdata {
 Text stext(String s) =>
     Text(s, style: TextStyle(decoration: TextDecoration.none, fontSize: 13, color: Colors.grey[800]));
 
+
+
 getDefault() async{
-  var f= new File("lib/json/data.json");
-  var s=await f.readAsString();
+
+  String s=await rootBundle.loadString("lib/json/data.json");
+
   var j=json.decode(s);
   return j;
 }
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//

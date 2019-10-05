@@ -5,6 +5,7 @@ import 'package:mytts8/mytts8.dart';
 import '../data.dart';
 import 'Refresh_Provider.dart';
 import 'data_type_support.dart';
+import 'support/logS.dart';
 
 class ReaderData {
   SectionSheet currentHL;
@@ -26,7 +27,7 @@ mixin ReaderState<T extends Reader> on State<T> {
   Mytts8 get tts => this.widget.tts;
   pagemove(SectionSheet sss);
 
-  refresh([Function fn]) {}
+  refresh([Function fn]);
 
   continueReading() async {
     if (await tts.isLanguageAvailable('zh-CN'))
@@ -83,6 +84,9 @@ class ChapterViewList extends StatefulWidget with RefreshProviderSTF, Reader {
       num f2 = BookMark.currentBook.menu.length;
       num f3 = (v < 0 && f1 < f2 - 1) ? 1 : (v > 0 && f1 > 1) ? -1 : null;
       if (f3 != null) BookMark.currentBook.getBookstate.currentChapter = BookMark.currentBook.menu[f1 + f3];
+      log("chapter index: " + BookMark.currentBook.getBookstate.currentChapter.index.toString());
+      BookMark.menuPageNeedToRefresh = true;
+      BookMark.chapterPageNeedToRefresh = true;
     }; //设置阅读器读完本页后的动作
   }
 
@@ -96,21 +100,32 @@ class ChapterViewList extends StatefulWidget with RefreshProviderSTF, Reader {
 class _ChapterViewListState extends State<ChapterViewList>
     with AutomaticKeepAliveClientMixin, RefreshProviderState, ReaderState {
   SectionSheet get thisFireS => this.widget.book.getBookstate.currentChapter.contentStart;
-
+  @override
+  bool get wantKeepAlive => true;
   @override
   void initState() {
     super.initState();
-
-    BookMark.chapterPageRefresher = () {
-      if (BookMark.chapterPageNeedToRefresh) {
-        BookMark.chapterPageNeedToRefresh = false;
-        Future.delayed(Duration(seconds: 1), () => refresh());
-      }
+    BookMark.chapterPageRefresher = ([x]) {
+      log("chapterPageRefresher");
+      if (BookMark.chapterPageNeedToRefresh && refresh()) BookMark.chapterPageNeedToRefresh = false;
     };
   }
 
   @override
-  bool get wantKeepAlive => true;
+  void dispose() {
+    BookMark.chapterPageRefresher = ([x]) {};
+    super.dispose();
+  }
+
+  @override
+  refresh([Function fn]) {
+    if (!Appdata.isAppOnBack && this.mounted && Appdata.instance.pageController.page == 2.0) {
+      setState(fn == null ? ([x]) {} : fn);
+      return true;
+    }
+    return false;
+  }
+
   @override
   pagemove(SectionSheet sss) {
     var p = Appdata.instance.pageController?.page;
@@ -133,28 +148,46 @@ class _ChapterViewListState extends State<ChapterViewList>
             }));
   }
 
-  static nullAction() {}
-
-  @override
-  refresh([Function fn = nullAction]) {
-    if (!Appdata.isAppOnBack && this.mounted && Appdata.instance.pageController.page == 2.0) setState(fn);
+  toNextChapter() async {
+    log("toNextChapter");
+    await this.widget.chapter.initContent();
+    this.widget.pst.currentHL = book.getBookstate.currentChapter.contentStart;
+    await (Appdata.isReadingMode ? startReading : () async {})();
+    refresh();
+    if (!Appdata.isAppOnBack) this.widget.controller.jumpTo(0);
   }
 
-  toNextChapter() async {
-    await this.widget.chapter.initContent();
-    await Future.delayed(
-        Duration(seconds: 1), refresh(() => this.widget.pst.currentHL = book.getBookstate.currentChapter.contentStart));
-    await (Appdata.isReadingMode ? startReading : () async {})();
-    if (!Appdata.isAppOnBack) this.widget.controller.jumpTo(0);
+  checkState()  {
+    log("checkState:start");
+    bool f = false;
+    if (this.widget.chapter.isloaded) {
+      log("checkState:本章节已经加载");
+      if (this.widget.pst.currentHL == null || this.widget.pst.currentHL.first != this.widget.chapter.contentStart) {
+        log("checkState:高亮显示段落", 1);
+        this.widget.pst.currentHL = this.widget.chapter.contentStart;
+        f = true;
+      }
+      if (!this.widget.pst.currentHL.isHighlight) {
+        this.widget.pst.currentHL.highLight();
+        f = true;
+      }
+    } else if (!this.widget.chapter.isloading) {
+      log("checkState:章节未加载, 启动加载");
+      toNextChapter().then((x) => refresh());
+    } else {
+      log("checkState:章节加载中");
+    }
+    return f;
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    print("build ChapterPage");
+    log("build ChapterPage");
     if (this.widget.chapter == null || this.widget.book == null) return Container(color: Colors.brown[200]);
     Widget _r;
     try {
+      checkState();
       _r = GestureDetector(
           onHorizontalDragEnd: (detail) => refresh(this.widget.pst.readingCompleteHandler(detail.primaryVelocity)),
           child: Container(
@@ -174,21 +207,11 @@ class _ChapterViewListState extends State<ChapterViewList>
                       itemCount: this.widget.chapter.contentStart.genChildren + 1,
                       itemBuilder: (context, index) =>
                           sectionSheet2Card(this.widget.chapter.contentStart.getGen(index))))));
-      if (!this.widget.chapter.isloaded && !this.widget.chapter.isloading)
-        toNextChapter();
-      else if (this.widget.chapter.isloaded) {
-        if (this.widget.pst.currentHL == null || this.widget.pst.currentHL.first != this.widget.chapter.contentStart) {
-          refresh(() {
-            this.widget.pst.currentHL = this.widget.chapter.contentStart;
-            this.widget.pst.currentHL.highLight();
-          });
-        }
-      } else if (this.widget.pst.currentHL.isHighlight == false) {
-        refresh(() => this.widget.pst.currentHL.highLight());
-      }
     } catch (e) {
       _r = Container(child: Text(e.toString(), softWrap: true));
+      log(e);
     }
+
     return _r;
   }
 }

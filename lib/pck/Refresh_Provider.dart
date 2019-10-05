@@ -17,49 +17,50 @@ mixin RefreshProviderSTF on StatefulWidget {
   }
 }
 mixin RefreshProviderState<T extends RefreshProviderSTF> on State<T>  {
-  final List<Function> _lf = [() {}];
-  static int _count = 0;
-  @override
-  void initState() {
-    super.initState();
-    this.widget._lf[0] = () => setState(() {});
-  }
+  // final List<Function> _lf = [() {}];
+  // static int _count = 0;
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   // this.widget._lf[0] = () => setState(() {});
+  // }
 
-  @override
-  void dispose() {
-    this.widget._lf[0] = () {};
-    super.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   this.widget._lf[0] = () {};
+  //   super.dispose();
+  // }
 
-  _setState() async {
-    print("start setState ${this.widget.state.action.length} ");
-    try {
-      RefreshProviderState._count += 1;
-      print("${RefreshProviderState._count.toString()}:${this.widget.state.action.length}:${this.widget.state.doing}");
-    } catch (e) {
-      print(e);
-    }
 
-    while (this.widget.state.action.isNotEmpty) {
-      this.widget.state.doing = true;
+  // _setState() async {
+  //   print("start setState ${this.widget.state.action.length} ");
+  //   try {
+  //     RefreshProviderState._count += 1;
+  //     print("${RefreshProviderState._count.toString()}:${this.widget.state.action.length}:${this.widget.state.doing}");
+  //   } catch (e) {
+  //     print(e);
+  //   }
 
-      await Future.value((this.widget.state.action.removeAt(0))());
-      this.widget.state.doing = false;
-    }
+  //   while (this.widget.state.action.isNotEmpty) {
+  //     this.widget.state.doing = true;
 
-    if (this.widget.state.action.isEmpty && !this.widget.state.doing && this.mounted) super.setState(() {});
-  }
+  //     await Future.value((this.widget.state.action.removeAt(0))());
+  //     this.widget.state.doing = false;
+  //   }
 
-  @override
-  setState(fn) {
-    this.widget.state.action.add(fn);
-    if (this.widget.state.canSet) {
-      this.widget.state.canSet = false;
-      _setState().then((x) {
-        this.widget.state.canSet = true;
-      });
-    } else {
-      print("已经开始setState,此次加入等待");
-    }
-  }
+  //   if (this.widget.state.action.isEmpty && !this.widget.state.doing && this.mounted) super.setState(() {});
+  // }
+
+  // @override
+  // setState(fn) {
+  //   this.widget.state.action.add(fn);
+  //   if (this.widget.state.canSet) {
+  //     this.widget.state.canSet = false;
+  //     _setState().then((x) {
+  //       this.widget.state.canSet = true;
+  //     });
+  //   } else {
+  //     print("已经开始setState,此次加入等待");
+  //   }
+  // }
 }

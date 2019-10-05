@@ -1,46 +1,8 @@
-// import 'dart:async';
-
-import "dart:math";
-import 'package:aaa/pck/get_string.dart';
-import 'package:aaa/pck/support/d_s_f_w.dart';
-// import 'package:flutter/foundation.dart';
-// import 'package:aaa/pck/map_support.dart';
-import 'chain_support.dart';
-// import 'package:aaa/pck/progress.dart';
 import 'package:flutter/material.dart';
-// import 'dart:convert';
-
-String getUid(int length) {
-  String alphabet = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM';
-  int strlenght = length;
-  String left = '';
-  for (var i = 0; i < strlenght; i++) {
-    left = left + alphabet[Random().nextInt(alphabet.length)];
-  }
-  return left;
-}
-
-class MyListener {
-  dynamic _v = "初始";
-  Function onGetter = () {};
-  Function onSetter = () {};
-  Function afterSetter = () {};
-  bool inited = false;
-  Map<String, Function> afterSetterList = {};
-
-  // Function afterGetter=(){};
-  get value {
-    this.onGetter();
-    return this.inited ? _v : null;
-  }
-
-  set value(var va) {
-    this.onSetter();
-    _v = va;
-    this.inited = true;
-    this.afterSetter();
-  }
-}
+import 'chain_support.dart';
+import 'get_string.dart';
+import 'support/app_data.dart';
+import 'support/logS.dart';
 
 class NavData {
   String tt;
@@ -74,8 +36,6 @@ class SectionSheet extends AbstractChain<SectionSheet> {
   double get height => (sgk?.currentContext?.size?.height) ?? 0.0;
   double get sumheight => height + (father == null ? 0.0 : father.sumheight);
 
-  int index;
-  // Map data = {}; //数据集
   String text;
   bool isHighlight = false;
   SectionSheet({this.text: "等待加载中", this.isHighlight: false});
@@ -86,43 +46,32 @@ class SectionSheet extends AbstractChain<SectionSheet> {
   Color get cl => isHighlight ? hColor : lColor;
   changeHighlight() => isHighlight = !isHighlight;
   highLight() {
-    print("height");
     SectionSheet _c = this;
-    while (_c._father != null) {
-      _c = _c._father;
-      _c.isHighlight = false;
-    }
+    while (_c._father != null) (_c = _c._father).isHighlight = false;
     _c = this;
-    while (_c._son != null) {
-      _c = _c._son;
-      _c.isHighlight = false;
-    }
-
+    while (_c._son != null) (_c = _c._son).isHighlight = false;
     this.isHighlight = true;
   }
 
   disHighLight() => isHighlight = false;
-
   static SectionSheet getSectionSheetChain(String text) {
-    var a = text.replaceAll("<br>", "\n");
-    a = a.replaceAll("<BR>", "\n");
-    a = a.replaceAll("\t", "\n");
-    var s = a.split(new RegExp(r"\n|\s\s"));
-
-    s.removeWhere((x) => x == " " * x.length || x.isEmpty);
-    if (s.isEmpty)
-      return null;
-    else {
-      SectionSheet ch1 = SectionSheet.fromString(s[0]);
-      SectionSheet ch2 = ch1;
-
-      for (var item in s) {
-        ch2.text = "  " + item;
-        ch2 = ch2.born(SectionSheet());
+    try {
+      var s = text.replaceAll(new RegExp("(<[b|B][r|R]>)|(\"\t\")"), "\n").split(new RegExp(r"\n|\s\s"));
+      s.removeWhere((x) => (x == " " * x.length) || x.isEmpty);
+      if (s.isNotEmpty) {
+        SectionSheet ch1 = SectionSheet.fromString(s[0]);
+        SectionSheet ch2 = ch1;
+        for (var item in s) {
+          ch2.text = "  " + item;
+          ch2 = ch2.born(SectionSheet());
+        }
+        ch2.father.son = null;
+        return ch1;
       }
-      ch2.father.son = null;
-      return ch1;
+    } catch (e) {
+      log("getSectionSheetChain error : ${e.toString()}");
     }
+    return null;
   }
 }
 
@@ -367,24 +316,11 @@ class BookMark {
     state["menuPageNeedToRefresh"] = v;
     menuPageRefresher(v);
   }
-}
 
-class App with Dsfw {
-  static App _instance;
-  App._internal();
-  static App _getInstance() => _instance ?? (_instance = App._internal());
-  factory App() => _getInstance();
-  static App get instance => _getInstance();
+  static bool get menuPageIsWaitingRefresh =>
+      state["menuPageIsWaitingRefresh"] ?? (state["menuPageIsWaitingRefresh"] = false);
+  static set menuPageIsWaitingRefresh(bool v) => state["menuPageIsWaitingRefresh"] = v;
 
-  static Map _database = {};
-  @override
-  Map get database => _database;
-  get bookmark => data["bookmark"] ?? (data["bookmark"] = {});
-  // set bookmark(v) => data["bookmark"] = v;
-
-  get appState => state["appState"] ?? (state["appState"] = {});
-  // set appState(v) => state["appState"] = v;
-
-  get bookcase => data["bookcase"] ?? (data["bookcase"] = {});
-  // set bookcase(v) => data["bookcase"] = v;
+  static Future get menuPageFuture => data["menuPageFuture"] ?? (data["menuPageFuture"] = null);
+  static set menuPageFuture(Future v) => data["menuPageFuture"] = v;
 }

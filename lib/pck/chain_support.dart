@@ -1,4 +1,3 @@
-
 abstract class AbstractBaseChain<T> {
   T _father;
   T _son;
@@ -31,6 +30,7 @@ abstract class AbstractChain<T extends AbstractBaseChain> extends AbstractBaseCh
 
   int get genFather => _father == null ? 0 : _father.genFather - 1;
   int get genChildren => _son == null ? 0 : _son.genChildren + 1;
+  operator [](int genDistance) => this.getGen(genDistance);
 
   T exchange(T ch1, T ch2) {
     if (ch2._father != null) ch1.father = ch2.father;
