@@ -1,8 +1,8 @@
 import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import '../../data_type.dart' show App;
 
-import 'support/app_data.dart';
 
 class DataShowPage extends StatefulWidget {
   @override

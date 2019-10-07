@@ -1,15 +1,5 @@
-// import 'dart:convert';
-
-// import 'dart:convert';
-// import 'dart:io';
-
-import 'package:aaa/data.dart';
-// import 'package:dio/dio.dart';
 import "package:flutter/material.dart";
-// import 'package:gbk2utf8/gbk2utf8.dart';
-
-import 'data_type_support.dart';
-
+import '../../data_type.dart';
 class ContentSettingPageData {
   static Site csite;
   static Book _cbk;
@@ -34,8 +24,6 @@ class ContentSettingPageData {
   static Function bookListRefresh;
   static Function siteDetailRefresh;
   static Function bookDetailRefresh;
-
-
 }
 
 class ContentSettingPage extends StatelessWidget {

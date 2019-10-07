@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:aaa/data.dart';
-import 'data_type_support.dart';
+import '../../data_type.dart';
 
 List shaixuanState1 = <Blockcelldata>[
   Blockcelldata("连载", 0, tcolor: Colors.grey[300]),

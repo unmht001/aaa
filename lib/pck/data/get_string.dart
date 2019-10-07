@@ -1,12 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:aaa/pck/support/logS.dart';
 import 'package:beautifulsoup/beautifulsoup.dart';
 import "package:dio/dio.dart";
-
 import 'package:gbk2utf8/gbk2utf8.dart';
-import 'data_type_support.dart';
+
+import '../support/logS.dart';
+import 'book.dart';
+import 'chapter.dart';
+// import 'data_type_support.dart';
 
 class PageOp {
   static charsetS(Response rp, {String charset: "utf8"}) {

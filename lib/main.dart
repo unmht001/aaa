@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 
 import 'init_fun.dart';
-import 'data.dart';
+import 'data_type.dart';
+import 'support.dart';
 
-import 'pck/data_type_support.dart';
-import 'pck/content_page.dart';
-import 'pck/menu_page.dart';
-import 'pck/main_page.dart';
-import 'pck/support/queue_roadsignal_eventgun.dart';
+import 'pck/page/chapter_page.dart';
+import 'pck/page/menu_page.dart';
+import 'pck/page/main_page.dart';
 
 EventGun gun = new EventGun();
 MyListener initok = new MyListener();
@@ -50,16 +49,26 @@ mixin HomePageMixin on State<MyHomePage> {
         DateTime.now().difference(_lastPressAt) < Duration(seconds: 1));
 
     _lastPressAt = DateTime.now();
-    if (!f) {      
-      _pctler.previousPage(duration: Duration(milliseconds: 300), curve: Curves.ease);
-      if (_pctler.page > 0.5 && _pctler.page<1.5) BookMark.menuPageNeedToRefresh = true;
+    if (!f) {
+      if (_pctler.page == 2.0) {
+        var d = Duration(milliseconds: 300);
+        _pctler.animateToPage(1, duration: d, curve: Curves.ease);
+        Future.delayed(d, () => BookMark.menuPageNeedToRefresh = true);
+      } else if (_pctler.page == 1.0) {
+        _pctler.animateToPage(0, duration: Duration(milliseconds: 300), curve: Curves.ease);
+      }
     }
 
     return f;
   }
 
-  void openpage([page = 1]) =>
-      this._pctler.animateToPage(page, duration: Duration(milliseconds: 300), curve: Curves.ease);
+  void openpage([page = 1]) {
+    this._pctler.animateToPage(page, duration: Duration(milliseconds: 300), curve: Curves.ease);
+    Future.delayed(Duration(milliseconds: 300), () {
+      BookMark.menuPageNeedToRefresh = true;
+      BookMark.chapterPageNeedToRefresh = true;
+    });
+  }
 }
 
 class MyHomePage extends StatefulWidget {
@@ -79,7 +88,7 @@ class _MyHomePageState extends State<MyHomePage>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    print("--" + state.toString());
+    bool f = Appdata.isAppOnBack;
     switch (state) {
       case AppLifecycleState.inactive: // 处于这种状态的应用程序应该假设它们可能在任何时候暂停。
         Appdata.isAppOnBack = true;
@@ -94,6 +103,9 @@ class _MyHomePageState extends State<MyHomePage>
         Appdata.isAppOnBack = false;
         break;
     }
+    if (f && !Appdata.isAppOnBack)
+      print("app--turn to back");
+    else if (!f && Appdata.isAppOnBack) print("app--turn to top");
   }
 
   @override
@@ -102,17 +114,13 @@ class _MyHomePageState extends State<MyHomePage>
       PageOne(itemonpress: (Book bk) {
         BookMark.currentBook = bk;
         openpage(1);
-        BookMark.menuPageNeedToRefresh = true;
-        (BookMark.menuPageRefresher ?? ([x]) {})();
       }),
       MenuPage(
           controller: this._menuCtr,
           itemonpress: (Book bk) {
             openpage(2);
-            BookMark.chapterPageNeedToRefresh = true;
-            (BookMark.chapterPageRefresher ?? ([x]) {})();
           }),
-      ChapterPage(controller: this._chapterCtr)
+      ChapterPage()
     ];
     super.build(context);
     var size = MediaQuery.of(context).size;
@@ -142,6 +150,5 @@ class _MyHomePageState extends State<MyHomePage>
     this._pctler = PageController(initialPage: 0);
     Appdata.instance.pageController = _pctler;
     this._menuCtr = ScrollController(initialScrollOffset: 1.0, keepScrollOffset: true);
-    this._chapterCtr = ScrollController(initialScrollOffset: 0.0, keepScrollOffset: true);
   }
 }

@@ -1,12 +1,11 @@
 // import 'package:aaa/init_fun.dart';
-import 'package:aaa/pck/data_show_page.dart';
-import 'package:aaa/pck/regexp_test.dart';
-import 'package:aaa/pck/setting_page.dart';
+import 'data_show_page.dart';
+import 'regexp_test_page.dart';
+import 'setting_page.dart';
 import 'package:flutter/material.dart';
-import 'Refresh_Provider.dart';
+import '../../support.dart';
 import "main_page_shaixuan.dart";
-import 'package:aaa/data.dart';
-import 'data_type_support.dart';
+import '../../data_type.dart';
 
 class PageOne extends StatefulWidget with RefreshProviderSTF {
   PageOne({Key key, Function itemonpress})

@@ -1,17 +1,10 @@
 import 'dart:convert';
-// import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mytts8/mytts8.dart';
-
-import 'pck/data_type_support.dart';
-import 'pck/support/app_data.dart';
-// import './pck/data_type_support.dart';
-// import 'package:mytts8/mytts8.dart';
-
-// bool initok = false;
-// List<BookData> bdlist;
+// import '../support/app_data.dart';
+import 'app_data.dart';
+import 'nav_data.dart';
 
 class Appdata {
   //Appdata define ----------
@@ -57,6 +50,9 @@ class Appdata {
   PageController get pageController => data["pageController"] ?? (data["pageController"] = null);
   set pageController(PageController v) => data["pageController"] = v;
 
+  ScrollController get chapterPageController => data["chapterPageController"] ?? (data["chapterPageController"] = null);
+  set chapterPageController(ScrollController v) => data["chapterPageController"] = v;
+
   //state
   static bool get isReadingMode => state["isReadingMode"] ?? (state["isReadingMode"] = false);
   static set isReadingMode(bool v) => state["isReadingMode"] = v;
@@ -68,12 +64,9 @@ class Appdata {
 Text stext(String s) =>
     Text(s, style: TextStyle(decoration: TextDecoration.none, fontSize: 13, color: Colors.grey[800]));
 
+getDefault() async {
+  String s = await rootBundle.loadString("lib/json/data.json");
 
-
-getDefault() async{
-
-  String s=await rootBundle.loadString("lib/json/data.json");
-
-  var j=json.decode(s);
+  var j = json.decode(s);
   return j;
 }

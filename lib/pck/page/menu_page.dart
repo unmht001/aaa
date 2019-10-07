@@ -2,9 +2,8 @@ import 'package:aaa/pck/support/logS.dart';
 import 'package:draggable_scrollbar/draggable_scrollbar.dart';
 import 'package:flutter/material.dart';
 
-import '../data.dart';
-import 'Refresh_Provider.dart';
-import 'data_type_support.dart';
+import '../../support.dart';
+import '../../data_type.dart';
 // import 'progress.dart';
 
 class MenuPage extends StatelessWidget {
@@ -55,21 +54,15 @@ class _MenuViewListState extends State<MenuViewList> with RefreshProviderState, 
   }
 
   refresh([Function fn]) {
-    if (!Appdata.isAppOnBack && this.mounted && Appdata.instance.pageController.page == 1.0) {
-      (null ? ([x]) {} : fn)();
+    if (!Appdata.isAppOnBack &&
+        this.mounted &&
+        Appdata.instance.pageController.page > 0.5 &&
+        Appdata.instance.pageController.page < 1.5) {
+      (fn == null ? ([x]) {} : fn)();
       setState(() {});
       return true;
     }
     return false;
-  }
-
-  refresh2() async {
-    if (BookMark.menuPageNeedToRefresh) {
-      if (!BookMark.menuPageIsWaitingRefresh) {
-        BookMark.menuPageIsWaitingRefresh = true;
-        
-      }
-    }
   }
 
   Widget makeItem(BuildContext context, int index) {
@@ -91,10 +84,13 @@ class _MenuViewListState extends State<MenuViewList> with RefreshProviderState, 
       _r = ListView(children: <Widget>[FlatButton(onPressed: () {}, child: Text("目录载入中...", softWrap: true))]);
 
       BookMark.currentBook.getMenu().then((x) async {
-        if (x is List) BookMark.currentBook.menu = x.map((a) => Chapter(a[0], a[1])).toList();
-      }).then((x) => setState(() {
-            print(222);
-          }));
+        if (x is List) {
+          var x2 = Chapter.fromList(x);
+          BookMark.currentBook.menu = x.map((a) => Chapter(a[0], a[1])).toList();
+          
+          print(x2);
+        }
+      }).then((x) => setState(() {}));
     } else
       _r = ListView.builder(
           reverse: false,
