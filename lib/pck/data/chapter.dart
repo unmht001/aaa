@@ -25,6 +25,23 @@ class Chapter extends AbstractChain<Chapter> {
   int index;
   bool isloaded = false;
   bool isloading = false;
+  String chapterUid;
+  bool localSaved=false;
+
+  toMap() {
+    return {
+      "chapterUid": this.chapterUid,
+      "chapterUrl": this.chapterUrl,
+      "chapterName": this.chapterName,
+      "book": this.book.uid,
+      "father":this.father?.chapterUid,
+      "son":this.son?.chapterUid,      
+      "content": this.content,
+
+    };
+  }
+
+  fromMap(mp) {}
 
   List<Chapter> get menu => book?.menu;
   Chapter([this.chapterUrl = "", this.chapterName = "", this.book]);
@@ -40,7 +57,7 @@ class Chapter extends AbstractChain<Chapter> {
     }
   }
 
-  initContent() async {
+  loadChapterContent() async {
     if (!isloading) {
       isloading = true;
       if (book != null) {
@@ -53,6 +70,14 @@ class Chapter extends AbstractChain<Chapter> {
       } else
         isloading = false;
       return false;
+    }
+    return true;
+  }
+
+  initContent() async {
+    await loadChapterContent();
+    if (son != null && !son.isloaded) {
+      await son.loadChapterContent();
     }
     return true;
   }

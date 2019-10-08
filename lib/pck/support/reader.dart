@@ -6,23 +6,21 @@ import 'logS.dart';
 
 mixin Reader on StatefulWidget {
   Chapter get chapter;
-  Book get book;
+  set chapter(Chapter v);
+  Book get book => chapter.book;
   Mytts8 get tts => gettts();
   static gettts() => Appdata.instance.tts;
 }
 
 mixin ReaderState<T extends Reader> on State<T> {
   Book get book => this.widget.book;
-
-  SectionSheet get currentHL => book.getBookstate.currentHL;
-  set currentHL(SectionSheet ss) => book.getBookstate.currentHL = ss;
-
-  // get onChapterReadingOver => book.getBookstate.onChapterReadingOver;
-  // set onChapterReadingOver(Function fn) => book.getBookstate.onChapterReadingOver = fn;
+  bool get isReadingMode;
+  SectionSheet get currentHL;
+  set currentHL(SectionSheet ss);
 
   Mytts8 get tts => this.widget.tts;
   pagemove([SectionSheet sss]);
-
+  markRefresh();
   refresh([Function fn]);
 
   continueReading() async {
@@ -33,9 +31,9 @@ mixin ReaderState<T extends Reader> on State<T> {
                 currentHL = currentHL.son;
                 pagemove(currentHL);
                 continueReading();
-                checkState();
+                if (checkState()) refresh();
               } else
-                changeChapter(1.0);
+                changeChapter(-1.0);
             }));
         if (book.getBookstate.isreading) this.widget.tts.speak(currentHL.text);
       });
@@ -44,8 +42,10 @@ mixin ReaderState<T extends Reader> on State<T> {
   }
 
   startReading() async {
-    book.getBookstate.isreading = true;
-    continueReading();
+    if (isReadingMode) {
+      book.getBookstate.isreading = true;
+      continueReading();
+    }
   }
 
   stopReading() async {
@@ -53,49 +53,50 @@ mixin ReaderState<T extends Reader> on State<T> {
     tts.stop();
   }
 
-  smartReading() async {
+  smartReading([SectionSheet ss]) async {
+    if (ss != null) {
+      currentHL = ss;
+      checkState();
+      refresh();
+    }
+
     book.getBookstate.isreading = !book.getBookstate.isreading;
     book.getBookstate.isreading ? continueReading() : tts.stop();
   }
 
   loadChapter() async {
-    log("toNextChapter");
     await this.widget.chapter.initContent();
     currentHL = book.getBookstate.currentChapter.contentStart;
-    await (Appdata.isReadingMode ? startReading : () async {})();
+    await startReading();
+    log("loadChapter refresh");
     refresh();
-    if (!Appdata.isAppOnBack) pagemove();
+    pagemove();
   }
 
   changeChapter(double v) {
-    num f1 = BookMark.currentBook.getBookstate.currentChapter.index;
-    num f2 = BookMark.currentBook.menu.length;
-    num f3 = (v < 0 && f1 < f2 - 1) ? 1 : (v > 0 && f1 > 1) ? -1 : null;
-    if (f3 != null) BookMark.currentBook.getBookstate.currentChapter = BookMark.currentBook.menu[f1 + f3];
-    log("chapter index: " + BookMark.currentBook.getBookstate.currentChapter.index.toString());
-    BookMark.menuPageNeedToRefresh = true;
-    BookMark.chapterPageNeedToRefresh = true;
+    log("changeChapter");
+    this.widget.chapter =
+        (v < 0 ? this.widget.chapter.son : v > 0 ? this.widget.chapter.father : null) ?? this.widget.chapter;
+    checkState();
+    log("changeChapter markRefresh");
+    markRefresh();
   }
 
   checkState() {
-    log("checkState:start");
+    log("checkState");
     bool f = false;
-    if (this.widget.chapter.isloaded) {
+    if (this.widget.chapter?.isloaded ?? false) {
       log("checkState:本章节已经加载");
       if (currentHL == null || currentHL.first != this.widget.chapter.contentStart) {
         log("checkState:高亮显示段落", 1);
         currentHL = this.widget.chapter.contentStart;
-        f = true;
       }
-      if (!currentHL.isHighlight) {
-        currentHL.highLight();
-        f = true;
-      } else {
-        currentHL.highLight();
-      }
-    } else if (!this.widget.chapter.isloading) {
+
+      currentHL.highLight();
+      f = true;
+    } else if (!(this.widget.chapter?.isloading ?? true)) {
       log("checkState:章节未加载, 启动加载");
-      loadChapter().then((x) => refresh());
+      loadChapter();
     } else {
       log("checkState:章节加载中");
     }

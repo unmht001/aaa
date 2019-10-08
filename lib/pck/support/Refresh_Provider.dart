@@ -1,4 +1,5 @@
 
+import 'package:aaa/support.dart';
 import 'package:flutter/material.dart';
 
 class StateStore {
@@ -17,5 +18,16 @@ mixin RefreshProviderSTF on StatefulWidget {
   }
 }
 mixin RefreshProviderState<T extends RefreshProviderSTF> on State<T>  {
+
+RoadSignal rs=new RoadSignal();
+
+@override
+  void setState(fn) {
+    fn();
+    rs.waitGreen().then( (x) =>super.setState((){}));
+    
+  }
+
+
 
 }

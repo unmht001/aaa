@@ -150,7 +150,8 @@
             "menuPattan": "<dd>([\\s\\S]+?)</dd>",
             "siteCharset": "utf8",
             "contentPatten": "([\\S\\s]*)",
-            "contentSoupTap": "#content"
+            "contentSoupTap": "#content",
+            "drop":12
         }
     }
 }

@@ -8,6 +8,7 @@ class Site {
   String siteCharset;
   String contentSoupTap;
   String contentPatten;
+  num drop=0;
   Site.fromMap(Map mp) {
     this.siteName = mp["siteName"];
     this.siteBaseUrl = mp["siteBaseUrl"];
@@ -18,6 +19,7 @@ class Site {
     this.siteCharset = mp["siteCharset"];
     this.contentSoupTap = mp["contentSoupTap"];
     this.contentPatten = mp["contentPatten"];
+    this.drop=mp["drop"]??0;
   }
   toMap() => {
         "siteName": this.siteName,
@@ -29,7 +31,8 @@ class Site {
         "siteCharset": this.siteCharset,
         "contentSoupTap": this.contentSoupTap,
         "contentPatten": this.contentPatten,
-        "bookBaseUrls": this.bookBaseUrls
+        "bookBaseUrls": this.bookBaseUrls,
+        "drop":this.drop
       };
   toString() => toMap.toString();
 

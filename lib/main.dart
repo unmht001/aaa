@@ -112,12 +112,15 @@ class _MyHomePageState extends State<MyHomePage>
   Widget build(BuildContext context) {
     var _tbs = [
       PageOne(itemonpress: (Book bk) {
+        Appdata.instance.tts.stop();
         BookMark.currentBook = bk;
         openpage(1);
       }),
       MenuPage(
+          
           controller: this._menuCtr,
           itemonpress: (Book bk) {
+            Appdata.instance.tts.stop();
             openpage(2);
           }),
       ChapterPage()

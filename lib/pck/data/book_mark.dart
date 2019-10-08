@@ -1,4 +1,5 @@
 // import '../support/app_data.dart';
+import '../../support.dart';
 import 'app_data.dart';
 import 'book.dart';
 import 'book_state.dart';
@@ -40,6 +41,7 @@ class BookMark {
       state["chapterPageNeedToRefresh"] ?? (state["chapterPageNeedToRefresh"] = false);
   static set chapterPageNeedToRefresh(bool v) {
     state["chapterPageNeedToRefresh"] = v;
+    log("chapterPageRefresher Action");
     chapterPageRefresher(v);
   }
 
@@ -60,4 +62,7 @@ class BookMark {
 
   static get onAppToTop => fn["onAppToTop"] ?? (fn["onAppToTop"] = ([x]) {});
   static set onAppToTop(Function v) => fn["onAppToTop"] = v;
+
+
+  static RoadSignal get chapterRefreshRs =>data["chapterRefreshRs"]??(data["chapterRefreshRs"]= new RoadSignal());
 }

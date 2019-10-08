@@ -83,14 +83,7 @@ class _MenuViewListState extends State<MenuViewList> with RefreshProviderState, 
     if (!BookMark.currentBook.getBookstate.isMenuLoaded) {
       _r = ListView(children: <Widget>[FlatButton(onPressed: () {}, child: Text("目录载入中...", softWrap: true))]);
 
-      BookMark.currentBook.getMenu().then((x) async {
-        if (x is List) {
-          var x2 = Chapter.fromList(x);
-          BookMark.currentBook.menu = x.map((a) => Chapter(a[0], a[1])).toList();
-          
-          print(x2);
-        }
-      }).then((x) => setState(() {}));
+      BookMark.currentBook.getMenu().then((x) => setState(() {print(333);}));
     } else
       _r = ListView.builder(
           reverse: false,
@@ -104,6 +97,7 @@ class _MenuViewListState extends State<MenuViewList> with RefreshProviderState, 
   Widget build(BuildContext context) {
     super.build(context);
     print("build menu");
+    rs.goRed();
     Widget _r;
     try {
       _r = Container(
@@ -120,6 +114,7 @@ class _MenuViewListState extends State<MenuViewList> with RefreshProviderState, 
     } catch (e) {
       _r = Container(child: Text(e.toString(), softWrap: true));
     }
+    rs.goGreen();
     return _r;
     // return Container();
   }

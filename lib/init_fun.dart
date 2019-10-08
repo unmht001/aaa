@@ -144,5 +144,6 @@ init(EventGun ff) async {
 
     // await initsdkdata();
   }
+  Bookcase.siteStore["cMqCQqtlEQ"].drop=12;
   return true;
 }

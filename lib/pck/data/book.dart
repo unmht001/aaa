@@ -1,3 +1,4 @@
+import '../../support.dart';
 import 'book_mark.dart';
 import 'book_state.dart';
 import 'bookcase.dart';
@@ -16,6 +17,10 @@ class Book {
   String lastupdatetime;
   String lastupdatepagename;
   String uid;
+
+  saveToLocal(){}
+  readFromLocal(){}
+  
 
   toMap() {
     return {
@@ -39,13 +44,23 @@ class Book {
   List<Chapter> menu = [];
 
   initMenu(List<List<String>> lm) {
+    
     menu = [];
     var i = 0;
-
-    for (var item in lm) {
+    var lm2;
+    log("initMenu: drop: ${this.getSite.drop}");
+    if(lm.length>this.getSite.drop){
+      lm2=lm.getRange(this.getSite.drop, lm.length);
+    }else{
+      lm2=lm;
+    }
+    for (var item in lm2) {
       menu.add(Chapter(item[0], item[1], this));
       menu.last.index = i;
       i++;
+    }
+    for (var i = 0; i < menu.length - 1; i++) {
+      menu[i].son = menu[i + 1];
     }
   }
 

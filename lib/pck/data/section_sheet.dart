@@ -7,9 +7,6 @@ class SectionSheet extends AbstractChain<SectionSheet> {
 
   GlobalKey sgk = new GlobalKey();
 
-  SectionSheet _father;
-  SectionSheet _son;
-
   double get height => (sgk?.currentContext?.size?.height) ?? 0.0;
   double get sumheight => height + (father == null ? 0.0 : father.sumheight);
 
@@ -23,10 +20,7 @@ class SectionSheet extends AbstractChain<SectionSheet> {
   Color get cl => isHighlight ? hColor : lColor;
   changeHighlight() => isHighlight = !isHighlight;
   highLight() {
-    SectionSheet _c = this;
-    while (_c._father != null) (_c = _c._father).disHighLight();
-    _c = this;
-    while (_c._son != null) (_c = _c._son).disHighLight();
+    this.first.mapChild((x){x.disHighLight();});
     this.isHighlight = true;
   }
 

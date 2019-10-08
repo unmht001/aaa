@@ -54,7 +54,7 @@ class Appdata {
   set chapterPageController(ScrollController v) => data["chapterPageController"] = v;
 
   //state
-  static bool get isReadingMode => state["isReadingMode"] ?? (state["isReadingMode"] = false);
+  static bool get isReadingMode => state["isReadingMode"] ?? (state["isReadingMode"] = true);
   static set isReadingMode(bool v) => state["isReadingMode"] = v;
 
   static bool get isAppOnBack => state["isAppOnBack"] ?? (state["isAppOnBack"] = false);

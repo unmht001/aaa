@@ -57,4 +57,22 @@ abstract class AbstractChain<T extends AbstractBaseChain> extends AbstractBaseCh
     else
       return null;
   }
+
+  mapFather(Function(T) fn) {
+    fn(this as T);
+    T c = this as T;
+    while (c.father != null) {
+      c = c.father;
+      fn(c);
+    }
+  }
+
+  mapChild(Function(T) fn) {
+    fn(this as T);
+    T c = this as T;
+    while (c.son != null) {
+      c = c.son;
+      fn(c);
+    }
+  }
 }
