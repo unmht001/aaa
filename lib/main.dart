@@ -1,3 +1,8 @@
+// import 'dart:convert';
+// import 'dart:io';
+
+// import 'package:beautifulsoup/beautifulsoup.dart';
+// import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 import 'init_fun.dart';
@@ -11,8 +16,12 @@ import 'pck/page/main_page.dart';
 EventGun gun = new EventGun();
 MyListener initok = new MyListener();
 
+
+
 // bool initok = false;
 void main() async {
+
+
   initok.value = false;
   init(gun).then((x) => initok.value = true);
   try {
@@ -34,9 +43,11 @@ class _MyAppState extends State<MyApp> {
     if (!initok.value) {
       initok.afterSetter = () => setState(() {});
       return MaterialApp(
-          theme: ThemeData(primarySwatch: Colors.blue), home: Scaffold(body: Center(child: Text(Appdata.loadingtext))));
+          theme: ThemeData(primarySwatch: Colors.blue),
+          home: Scaffold(body: Center(child: Text(Appdata.loadingtext))));
     } else
-      return MaterialApp(theme: ThemeData(primarySwatch: Colors.blue), home: MyHomePage());
+      return MaterialApp(
+          theme: ThemeData(primarySwatch: Colors.blue), home: MyHomePage());
   }
 }
 
@@ -55,7 +66,8 @@ mixin HomePageMixin on State<MyHomePage> {
         _pctler.animateToPage(1, duration: d, curve: Curves.ease);
         Future.delayed(d, () => BookMark.menuPageNeedToRefresh = true);
       } else if (_pctler.page == 1.0) {
-        _pctler.animateToPage(0, duration: Duration(milliseconds: 300), curve: Curves.ease);
+        _pctler.animateToPage(0,
+            duration: Duration(milliseconds: 300), curve: Curves.ease);
       }
     }
 
@@ -63,7 +75,8 @@ mixin HomePageMixin on State<MyHomePage> {
   }
 
   void openpage([page = 1]) {
-    this._pctler.animateToPage(page, duration: Duration(milliseconds: 300), curve: Curves.ease);
+    this._pctler.animateToPage(page,
+        duration: Duration(milliseconds: 300), curve: Curves.ease);
     Future.delayed(Duration(milliseconds: 300), () {
       BookMark.menuPageNeedToRefresh = true;
       BookMark.chapterPageNeedToRefresh = true;
@@ -79,7 +92,11 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage>
-    with AutomaticKeepAliveClientMixin, SingleTickerProviderStateMixin, HomePageMixin, WidgetsBindingObserver {
+    with
+        AutomaticKeepAliveClientMixin,
+        SingleTickerProviderStateMixin,
+        HomePageMixin,
+        WidgetsBindingObserver {
   @override
   bool get wantKeepAlive => true;
   PageController _pctler;
@@ -117,7 +134,6 @@ class _MyHomePageState extends State<MyHomePage>
         openpage(1);
       }),
       MenuPage(
-          
           controller: this._menuCtr,
           itemonpress: (Book bk) {
             Appdata.instance.tts.stop();
@@ -155,6 +171,7 @@ class _MyHomePageState extends State<MyHomePage>
     WidgetsBinding.instance.addObserver(this);
     this._pctler = PageController(initialPage: 0);
     Appdata.instance.pageController = _pctler;
-    this._menuCtr = ScrollController(initialScrollOffset: 1.0, keepScrollOffset: true);
+    this._menuCtr =
+        ScrollController(initialScrollOffset: 1.0, keepScrollOffset: true);
   }
 }
