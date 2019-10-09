@@ -36,6 +36,7 @@ dependencies:
   
   gbk2utf8: ^1.0.1
   json_serializable: ^3.2.2
+  url: ^2.0.0
 
 dev_dependencies:
   flutter_test:
