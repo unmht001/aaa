@@ -27,6 +27,7 @@ mixin ReaderState<T extends Reader> on State<T> {
     if (await tts.isLanguageAvailable('zh-CN'))
       refresh(() {
         tts.setCompletionHandler(() => refresh(() async {
+              if (Appdata.isAppOnBack) print("tts.setCompletionHandler: Appdata.isAppOnBack: ${Appdata.isAppOnBack}");
               if (currentHL.son != null) {
                 currentHL = currentHL.son;
                 pagemove(currentHL);
@@ -80,6 +81,8 @@ mixin ReaderState<T extends Reader> on State<T> {
     checkState();
     log("changeChapter markRefresh");
     markRefresh();
+    pagemove();
+    if (Appdata.isReadingMode) startReading();
   }
 
   checkState() {
@@ -99,6 +102,11 @@ mixin ReaderState<T extends Reader> on State<T> {
       loadChapter();
     } else {
       log("checkState:章节加载中");
+    }
+    if (this.widget.chapter?.son?.isloaded ?? false) {
+      if (!(this.widget.chapter?.son?.isloading ?? true)) {
+        this.widget.chapter?.son?.loadChapterContent();
+      }
     }
     return f;
   }

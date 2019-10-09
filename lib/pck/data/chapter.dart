@@ -1,3 +1,5 @@
+// import 'dart:convert';
+
 import 'package:aaa/support.dart';
 
 import 'get_string.dart';
@@ -26,7 +28,7 @@ class Chapter extends AbstractChain<Chapter> {
   bool isloaded = false;
   bool isloading = false;
   String chapterUid;
-  bool localSaved=false;
+  bool localSaved = false;
 
   toMap() {
     return {
@@ -34,17 +36,20 @@ class Chapter extends AbstractChain<Chapter> {
       "chapterUrl": this.chapterUrl,
       "chapterName": this.chapterName,
       "book": this.book.uid,
-      "father":this.father?.chapterUid,
-      "son":this.son?.chapterUid,      
+      "father": this.father?.chapterUid,
+      "son": this.son?.chapterUid,
       "content": this.content,
-
     };
+  }
+
+  save() {
+    // String text=jsonEncode(toMap());
   }
 
   fromMap(mp) {}
 
   List<Chapter> get menu => book?.menu;
-  Chapter([this.chapterUrl = "", this.chapterName = "", this.book]);
+  Chapter([this.chapterUrl = "", this.chapterName = "", this.book, this.chapterUid]);
   Chapter.fromList(List lst) {
     if (lst != null) {
       this.chapterUrl = lst[0][0];
@@ -58,7 +63,7 @@ class Chapter extends AbstractChain<Chapter> {
   }
 
   loadChapterContent() async {
-    if (!isloading) {
+    if (!isloaded && !isloading) {
       isloading = true;
       if (book != null) {
         content = await PageOp.getChapterData(this);
@@ -76,9 +81,8 @@ class Chapter extends AbstractChain<Chapter> {
 
   initContent() async {
     await loadChapterContent();
-    if (son != null && !son.isloaded) {
-      await son.loadChapterContent();
-    }
+    if (son != null) await son.loadChapterContent();
+
     return true;
   }
 }

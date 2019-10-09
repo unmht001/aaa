@@ -60,6 +60,7 @@ class _ChapterViewListState extends State<ChapterViewList>
 
   @override
   refresh([Function fn]) {
+    if (Appdata.isAppOnBack) print("refresh: Appdata.isAppOnBack: ${Appdata.isAppOnBack}");
     log("refresh");
     var page = Appdata.instance.pageController.page;
     if (!Appdata.isAppOnBack && this.mounted && page >= 1.5 && page <= 2.5) setState((fn == null ? ([x]) {} : fn));
@@ -70,10 +71,18 @@ class _ChapterViewListState extends State<ChapterViewList>
   @override
   pagemove([SectionSheet sss]) {
     if (!Appdata.isAppOnBack) {
-      var p = Appdata.instance.pageController?.page;
       if (sss == null)
         controller.position.moveTo(0);
-      else if (p != null && p > 1.5 && p < 2.5) controller.position.moveTo(controller.position.pixels + sss.height);
+      else if ((sss.genFather ?? 0) < -3) {
+        var p = Appdata.instance.pageController?.page;
+        var s = controller.position.maxScrollExtent * sss.genFather * -1 / sss.first.genChildren +
+            Appdata.height * (sss.genFather * -1 / sss.first.genChildren - 0.5);
+        if (p != null && p > 1.5 && p < 2.5 && s >= 0)
+          controller.position.animateTo(s,
+              duration: Duration(milliseconds: (sss.height == 0 ? 100 : sss.height).toInt() * 5), curve: Curves.ease);
+      }
+    } else {
+      print("pagemove: Appdata.isAppOnBack: ${Appdata.isAppOnBack}");
     }
   }
 

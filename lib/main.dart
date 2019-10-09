@@ -91,7 +91,7 @@ class _MyHomePageState extends State<MyHomePage>
     bool f = Appdata.isAppOnBack;
     switch (state) {
       case AppLifecycleState.inactive: // 处于这种状态的应用程序应该假设它们可能在任何时候暂停。
-        Appdata.isAppOnBack = true;
+        Appdata.isAppOnBack = false;
         break;
       case AppLifecycleState.resumed: // 应用程序可见，前台
         Appdata.isAppOnBack = true;
@@ -104,8 +104,8 @@ class _MyHomePageState extends State<MyHomePage>
         break;
     }
     if (f && !Appdata.isAppOnBack)
-      print("app--turn to back");
-    else if (!f && Appdata.isAppOnBack) print("app--turn to top");
+      log("app--turn to back");
+    else if (!f && Appdata.isAppOnBack) log("app--turn to top");
   }
 
   @override
@@ -144,12 +144,15 @@ class _MyHomePageState extends State<MyHomePage>
     this._pctler.dispose();
     this._menuCtr.dispose();
     this._chapterCtr.dispose();
+    WidgetsBinding.instance.removeObserver(this);
+    Appdata.instance.tts.stop();
     super.dispose();
   }
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     this._pctler = PageController(initialPage: 0);
     Appdata.instance.pageController = _pctler;
     this._menuCtr = ScrollController(initialScrollOffset: 1.0, keepScrollOffset: true);
