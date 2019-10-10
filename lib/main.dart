@@ -62,6 +62,12 @@ mixin HomePageMixin on State<MyHomePage> {
     return f;
   }
 
+  
+
+  refresh() {
+    setState(() {});
+  }
+
   void openpage([page = 1]) {
     this._pctler.animateToPage(page, duration: Duration(milliseconds: 300), curve: Curves.ease);
     Future.delayed(Duration(milliseconds: 300), () {
@@ -117,7 +123,6 @@ class _MyHomePageState extends State<MyHomePage>
         openpage(1);
       }),
       MenuPage(
-          
           controller: this._menuCtr,
           itemonpress: (Book bk) {
             Appdata.instance.tts.stop();
@@ -146,6 +151,7 @@ class _MyHomePageState extends State<MyHomePage>
     this._chapterCtr.dispose();
     WidgetsBinding.instance.removeObserver(this);
     Appdata.instance.tts.stop();
+    BookMark.mainPageRefresher=([x]){};
     super.dispose();
   }
 
@@ -156,5 +162,6 @@ class _MyHomePageState extends State<MyHomePage>
     this._pctler = PageController(initialPage: 0);
     Appdata.instance.pageController = _pctler;
     this._menuCtr = ScrollController(initialScrollOffset: 1.0, keepScrollOffset: true);
+    BookMark.mainPageRefresher=refresh;
   }
 }

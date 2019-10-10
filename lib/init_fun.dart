@@ -4,6 +4,7 @@ import 'dart:convert';
 // import 'package:mytts8/mytts8.dart';
 import 'dart:io';
 // import 'dart:convert';
+// import 'package:flutter/cupertino.dart';
 import 'package:path_provider/path_provider.dart';
 
 // import 'pck/event_gun.dart';
@@ -12,8 +13,6 @@ import 'data_type.dart';
 import 'pck/data/data.dart';
 import 'pck/support/logS.dart';
 import 'pck/support/queue_roadsignal_eventgun.dart';
-
-
 
 class StateInit {
   static StateInit _instance;
@@ -53,7 +52,7 @@ class StateInit {
     }
   }
 
-  static readDataFromDefault() async =>await  getDefault();
+  static readDataFromDefault() async => await getDefault();
 
   static readDataFromSetting() async => {"bookdata": Appdata.instance.bks, "sitedata": Appdata.instance.sitedata};
 
@@ -115,6 +114,16 @@ class StateInit {
   }
 }
 
+update(data) async {
+  Appdata.instance.bks = data["bookdata"];
+  Appdata.instance.sitedata = data["sitedata"];
+}
+
+saveData() async {
+  var s = await StateInit.readDataFromSetting();
+  await StateInit.saveDataToJson(s);
+}
+
 init(EventGun ff) async {
   await Future.delayed(Duration(seconds: 1));
 
@@ -122,14 +131,14 @@ init(EventGun ff) async {
     return true;
   } else {
     var sss = await StateInit.readDataFromJson();
-    bool flag = false;
-    if (sss == null) {
-      sss = await StateInit.readDataFromDefault();
-      flag = true;
-    }
+    // bool flag = false;
+    // if (sss == null) {
+    //   sss = await StateInit.readDataFromDefault();
+    //   flag = true;
+    // }
     Appdata.instance.bks = sss["bookdata"];
     Appdata.instance.sitedata = sss["sitedata"];
-    if (flag) await StateInit.saveDataToJson(sss);
+    // if (flag) await StateInit.saveDataToJson(sss);
 
     while (true) {
       Future.delayed(Duration(seconds: 1), () => StateInit());
@@ -144,6 +153,6 @@ init(EventGun ff) async {
 
     // await initsdkdata();
   }
-  Bookcase.siteStore["cMqCQqtlEQ"].drop=12;
+  // Bookcase.siteStore["cMqCQqtlEQ"].drop=12;
   return true;
 }

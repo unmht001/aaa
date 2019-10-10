@@ -63,6 +63,8 @@ class BookMark {
   static get onAppToTop => fn["onAppToTop"] ?? (fn["onAppToTop"] = ([x]) {});
   static set onAppToTop(Function v) => fn["onAppToTop"] = v;
 
+  static RoadSignal get chapterRefreshRs => data["chapterRefreshRs"] ?? (data["chapterRefreshRs"] = new RoadSignal());
 
-  static RoadSignal get chapterRefreshRs =>data["chapterRefreshRs"]??(data["chapterRefreshRs"]= new RoadSignal());
+  static get mainPageRefresher => fn["mainPageRefresher"] ?? (fn["mainPageRefresher"] = ([x]) {});
+  static set mainPageRefresher(Function v) => fn["mainPageRefresher"] = v;
 }

@@ -1,4 +1,7 @@
 // import 'package:aaa/init_fun.dart';
+// import 'package:aaa/init_fun.dart';
+import 'package:aaa/pck/page/search_page.dart';
+
 import 'data_show_page.dart';
 import 'regexp_test_page.dart';
 import 'setting_page.dart';
@@ -17,23 +20,26 @@ class PageOne extends StatefulWidget with RefreshProviderSTF {
   _PageOneState createState() => _PageOneState();
 }
 
-class _PageOneState extends State<PageOne> with AutomaticKeepAliveClientMixin,  TickerProviderStateMixin, RefreshProviderState {
+class _PageOneState extends State<PageOne>
+    with AutomaticKeepAliveClientMixin, TickerProviderStateMixin, RefreshProviderState {
   TabController _p1ctl;
   TabController _controller;
+  TabController _c3;
   @override
   bool get wantKeepAlive => true;
   @override
   void initState() {
     super.initState();
     _p1ctl = TabController(vsync: this, length: 2);
-    this._controller = TabController(
-        vsync: this, length: Appdata.instance.navs.length);
+    _c3 = TabController(vsync: this, length: 2);
+    this._controller = TabController(vsync: this, length: Appdata.instance.navs.length);
   }
 
   @override
   void dispose() {
     this._p1ctl.dispose();
     this._controller.dispose();
+    _c3.dispose();
     super.dispose();
   }
 
@@ -41,11 +47,14 @@ class _PageOneState extends State<PageOne> with AutomaticKeepAliveClientMixin,  
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
-        
+
         //page 1
-        body: TabBarView(
-            physics: NeverScrollableScrollPhysics(),
-            controller: _controller, children: <Widget>[bookcase(context), ContentSettingPage(), RegexpTestPage(), DataShowPage()]),
+        body: TabBarView(physics: NeverScrollableScrollPhysics(), controller: _controller, children: <Widget>[
+          bookcase(context),
+          Scaffold(body: SearchPage()),
+          Scaffold(body: TabBarView(controller: _c3, children: <Widget>[ContentSettingPage(), RegexpTestPage()])),
+          DataShowPage()
+        ]),
         bottomNavigationBar: BottomNavigationBar(
             type: BottomNavigationBarType.fixed,
             iconSize: 24.0,
@@ -57,8 +66,7 @@ class _PageOneState extends State<PageOne> with AutomaticKeepAliveClientMixin,  
 
   List<BottomNavigationBarItem> navs() {
     List<BottomNavigationBarItem> _r = [];
-    for (var x in (Appdata.instance.navs))
-      _r.add(BottomNavigationBarItem(title: Text(x.tt), icon: Icon(x.icon)));
+    for (var x in (Appdata.instance.navs)) _r.add(BottomNavigationBarItem(title: Text(x.tt), icon: Icon(x.icon)));
     return _r;
   }
 
@@ -159,7 +167,7 @@ class _PageOneState extends State<PageOne> with AutomaticKeepAliveClientMixin,  
                     Container(
                         height: 65,
                         width: 50,
-                        child: Text(book.pic,
+                        child: Text(book.pic ?? "图片",
                             style: TextStyle(fontSize: 15, color: Colors.black, decoration: TextDecoration.none))),
                     Container(
                         child: Column(
@@ -174,11 +182,16 @@ class _PageOneState extends State<PageOne> with AutomaticKeepAliveClientMixin,  
                     Expanded(child: Container()),
                     Container(
                         height: 30,
-                        width: 70,
+                        width: 100,
                         decoration: BoxDecoration(
-                            border: Border.all(width: 1, color: Colors.black), borderRadius: BorderRadius.circular(13)),
+                            border: Border.all(width: 1, color: Colors.grey), borderRadius: BorderRadius.circular(13)),
                         alignment: Alignment.center,
-                        child: FlatButton(onPressed: () {}, child: stext("详情")))
+                        child: FlatButton(
+                            onPressed: () {
+
+                              
+                            },
+                            child: stext("详情")))
                   ])),
               Container(height: 1, color: Colors.grey),
               Container(
@@ -215,7 +228,13 @@ class _PageOneState extends State<PageOne> with AutomaticKeepAliveClientMixin,  
                     gmbutton(Icons.arrow_downward, Colors.red, "批量定阅", () {}),
                     gmbutton(Icons.arrow_right, Colors.red, "移到分组", () {}),
                     gmbutton(Icons.share, Colors.red, "分享本书", () {}),
-                    gmbutton(Icons.delete, Colors.red, "删除本书", () {})
+                    gmbutton(Icons.delete, Colors.red, "删除本书", () {
+                              Navigator.pop(context);
+                              Bookcase.deleteBook(book);
+                              
+                              BookMark.mainPageRefresher();
+
+                    })
                   ])),
               Container(height: 1, color: Colors.grey),
               Container(

@@ -139,7 +139,17 @@
             "menuPattan": "(<li.+?/li>)",
             "siteCharset": "gbk",
             "contentPatten": "</div>[^>]+?(<p>[\\s\\S]+?</p>)",
-            "contentSoupTap": "#content"
+            "contentSoupTap": "#content",
+            "searchBookSetting": {
+                "requestCoding": "",
+                "searchUrl": "http://www.shumil.co/search.php?searchtype=all&searchkey=<--replace-->&sbt=%CB%D1%CB%F7",
+                "queryMask": "",
+                "replacePattern": [["(</b>)|(<b>)",""]],
+                "firstMatchPattern": ["<div\\sclass=\"list\">([\\S\\s]+?)<div\\sclass=\"clear\">"],
+                "allMatchPattern": "<li>([\\S\\s]+?)</li>",
+                "searchMethod": "get",
+                "urlReplaceSymbol": "<--replace-->"
+            }
         },
         "cMqCQqtlEQ": {
             "siteUID": "cMqCQqtlEQ",
@@ -151,7 +161,17 @@
             "siteCharset": "utf8",
             "contentPatten": "([\\S\\s]*)",
             "contentSoupTap": "#content",
-            "drop":12
+            "drop": 12,
+            "searchBookSetting": {
+                "requestCoding": "",
+                "searchUrl": "",
+                "queryMask": "",
+                "replacePattern": [],
+                "firstMatchPattern": [],
+                "allMatchPattern": "",
+                "searchMethod": "get",
+                "urlReplaceSymbol": "<--replace-->"
+            }
         }
     }
 }
