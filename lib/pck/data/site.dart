@@ -18,6 +18,7 @@ class Site {
   String contentSoupTap;
   String contentPatten;
   num drop = 0;
+  Map<String, String> bookBaseUrls = {};
   Map searchBookSetting = {
     "requestCoding": "",
     "searchUrl": "",
@@ -70,7 +71,9 @@ class Site {
                   ? siteCharset
                   : searchBookSetting["requestCoding"])) ==
               "utf8";
-      text = Uri.encodeQueryComponent(text, encoding: isUtf8 ? Utf8Codec() : gbk);
+      if (searchBookSetting["urlNeadCoding"] == "true")
+        text = Uri.encodeQueryComponent(text, encoding: isUtf8 ? Utf8Codec() : gbk);
+
       List<int> Function(dynamic, RequestOptions) fn2 =
           (request, options) => isUtf8 ? Utf8Codec().encode(options.data) : gbk.encode(options.data);
 
@@ -78,10 +81,14 @@ class Site {
         String url = searchBookSetting["searchUrl"].toString().replaceAll(searchBookSetting["urlReplaceSymbol"], text);
         Dio dio =
             Dio(BaseOptions(contentType: ContentType.html, responseType: ResponseType.bytes, requestEncoder: fn2));
+        (dio.httpClientAdapter as DefaultHttpClientAdapter).onHttpClientCreate = (client) {
+          client.badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+        };
+
         Response response = await dio.get(url);
         if (response.statusCode == 200) {
           var s = PageOp.charsetS(response, charset: siteCharset).toString();
-          var s12 = RegExp("<a[\\s\\S]+?href=\"(.+?)\"[\\s\\S]*?>(.+?)</a>", multiLine: true);
+          var s12 = RegExp("<a[\\s\\S]+?href=\"([\\s\\S]+?)\"[\\s\\S]*?>\\s*([\\s\\S]+?)<\/a>", multiLine: true);
           var _r;
           List s2;
           if (searchBookSetting["replacePattern"]?.isNotEmpty ?? false)
@@ -91,7 +98,10 @@ class Site {
               s = RegExp(item, multiLine: true).firstMatch(s).group(1).toString();
           s2 = RegExp(searchBookSetting["allMatchPattern"], multiLine: true).allMatches(s).toList();
           s2 = s2.map((vs) => vs.group(1).toString()).toList();
-          _ret = s2.map((vs) => [(_r = s12.firstMatch(vs)).group(1).toString(), _r.group(2).toString()]).toList();
+          _ret = s2
+              .map((vs) =>
+                  [(_r = s12.firstMatch(vs)).group(1).toString().replaceAll(siteBaseUrl, ""), _r.group(2).toString()])
+              .toList();
         } else
           _ret = "失败代码: ${response.statusCode}.";
       }
@@ -101,6 +111,4 @@ class Site {
     // print(_ret);
     return _ret;
   }
-
-  Map<String, String> bookBaseUrls = {};
 }

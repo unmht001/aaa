@@ -20,7 +20,7 @@ class Book {
 
   saveToLocal(){}
   readFromLocal(){}
-  
+
 
   toMap() {
     return {
@@ -30,8 +30,11 @@ class Book {
       "pic": this.pic,
       "progress": this.progress,
       "state": this.state,
+      "name":this.name,
       "lastupdatepagename": this.lastupdatepagename,
-      "lastupdatetime": this.lastupdatetime
+      "lastupdatetime": this.lastupdatetime,
+      "bookBaseUrl":getSite.bookBaseUrls[uid]??"",
+      "site":getSite?.siteUID ??""
     };
   }
 
@@ -81,7 +84,7 @@ class Book {
   // getContent(Chapter chapter) async => await PageOp.getpagedata(this, chapter);
   BookState get getBookstate => BookMark.bookState[this.uid];
   Site get getSite => Bookcase.siteStore[getBookstate.siteString];
-  String get getMenuUrl => getSite.siteBaseUrl + getSite.bookBaseUrls[uid] + getSite.menuUrl;
+  String get getMenuUrl => (getSite.siteBaseUrl + "/"+ getSite.bookBaseUrls[uid] +"/"+ getSite.menuUrl).replaceAll(RegExp( "(?!\:)\/\/" ), "/");
   double get getMenuPv => getBookstate.menupv;
   // setMenuPv()=>getBookstate.menupv
 

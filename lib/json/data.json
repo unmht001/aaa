@@ -148,13 +148,14 @@
                 "firstMatchPattern": ["<div\\sclass=\"list\">([\\S\\s]+?)<div\\sclass=\"clear\">"],
                 "allMatchPattern": "<li>([\\S\\s]+?)</li>",
                 "searchMethod": "get",
-                "urlReplaceSymbol": "<--replace-->"
+                "urlReplaceSymbol": "<--replace-->",
+                "urlNeadCoding":"true"
             }
         },
         "cMqCQqtlEQ": {
             "siteUID": "cMqCQqtlEQ",
             "siteName": "啃文书库",
-            "siteBaseUrl": "https://www.kenwen.com/",
+            "siteBaseUrl": "http://www.kenwen.com/",
             "menuUrl": "",
             "menuSoupTag": "div#list",
             "menuPattan": "<dd>([\\s\\S]+?)</dd>",
@@ -164,13 +165,14 @@
             "drop": 12,
             "searchBookSetting": {
                 "requestCoding": "",
-                "searchUrl": "",
+                "searchUrl": "https://sou.xanbhx.com/search?t=920895234054625192&siteid=kenwencom&q=<--replace-->",
                 "queryMask": "",
                 "replacePattern": [],
                 "firstMatchPattern": [],
-                "allMatchPattern": "",
+                "allMatchPattern": "(?:<li>(?:[\\s\\S]+?)(?:<span\\sclass=\"s2\">(?!<b>)([\\s\\S]*?)(?!<\/b>)<\/span>[\\s]+?)(?:[\\s\\S]+?)<\/li>)",
                 "searchMethod": "get",
-                "urlReplaceSymbol": "<--replace-->"
+                "urlReplaceSymbol": "<--replace-->",
+                "urlNeadCoding":"false"
             }
         }
     }

@@ -105,7 +105,7 @@ class _PageOneState extends State<PageOne>
   }
 
   Widget getCard(BuildContext context, int index) {
-    Book bk = Bookcase.bookStore[Bookcase.bookStore.keys.toList()[index]];
+    Book  bk = Bookcase.bookStore[Bookcase.bookStore.keys.toList()[index]];
 
     return FlatButton(
         onPressed: () => this.widget.itemonpress(bk),

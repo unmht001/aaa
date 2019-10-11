@@ -54,7 +54,20 @@ class StateInit {
 
   static readDataFromDefault() async => await getDefault();
 
-  static readDataFromSetting() async => {"bookdata": Appdata.instance.bks, "sitedata": Appdata.instance.sitedata};
+  static readDataFromSetting() async {
+    List books = [];
+    for (var item in Bookcase.bookStore.keys.toList()) {
+      books.add(Bookcase.bookStore[item].toMap());
+    }
+    Appdata.instance.bks = books;
+
+    Map sites = {};
+    for (var item in Bookcase.siteStore.keys.toList()) {
+      sites[item] = Bookcase.siteStore[item].toMap();
+    }
+    Appdata.instance.sitedata = sites;
+    return {"bookdata": Appdata.instance.bks, "sitedata": Appdata.instance.sitedata};
+  }
 
   static saveDataToJson(data) async {
     try {
@@ -114,9 +127,14 @@ class StateInit {
   }
 }
 
+loadDefault() async {
+  await update(await StateInit.readDataFromDefault());
+}
+
 update(data) async {
   Appdata.instance.bks = data["bookdata"];
   Appdata.instance.sitedata = data["sitedata"];
+  Bookcase.init(Appdata.instance.bks, Appdata.instance.sitedata, "ywXSyXTKVO");
 }
 
 saveData() async {
@@ -131,14 +149,15 @@ init(EventGun ff) async {
     return true;
   } else {
     var sss = await StateInit.readDataFromJson();
-    // bool flag = false;
-    // if (sss == null) {
-    //   sss = await StateInit.readDataFromDefault();
-    //   flag = true;
-    // }
+    bool flag = false;
+    // sss=null;
+    if (sss == null) {
+      sss = await StateInit.readDataFromDefault();
+      flag = true;
+    }
     Appdata.instance.bks = sss["bookdata"];
     Appdata.instance.sitedata = sss["sitedata"];
-    // if (flag) await StateInit.saveDataToJson(sss);
+    if (flag) await StateInit.saveDataToJson(sss);
 
     while (true) {
       Future.delayed(Duration(seconds: 1), () => StateInit());

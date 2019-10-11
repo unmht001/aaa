@@ -1,9 +1,6 @@
-// import '../support/app_data.dart';
-
-// import 'package:aaa/pck/data/data.dart';
 import 'package:aaa/pck/support/get_uid.dart';
 
-// import '../../init_fun.dart';
+import '../../init_fun.dart';
 import 'app_data.dart';
 import 'book.dart';
 import 'book_mark.dart';
@@ -31,8 +28,7 @@ class Bookcase {
     var uid = book.uid;
     book.getSite.bookBaseUrls.remove(uid);
     bookStore.remove(uid);
-    // Appdata.instance.bks.removeWhere((x)=>x["uid"]==book.uid );
-
+    saveData();
   }
 
   static init(List bookdata, Map sitedata, String siteUID) {
@@ -40,18 +36,18 @@ class Bookcase {
     BookMark.instance;
     for (var item in sitedata.keys) siteStore[item] = Site.fromMap(sitedata[item]);
 
-    for (var item in bookdata) addBook(item);
+    for (var item in bookdata) addBook(item,save: false);
 
     BookMark.currentBook = bookStore[bookdata[0]["uid"]];
   }
 
-  static addBook(Map mp, {Book book, String siteUid, String bookBaseUrl}) {
+  static addBook(Map mp, {Book book, String siteUid, String bookBaseUrl, bool save: true}) {
     var _bk = (mp != null) ? Book.fromMap(mp) : book;
     mp = mp ?? {};
     bookStore[book?.uid ?? (_bk.uid = mp["uid"]) ?? (_bk.uid = getUid(10))] = _bk;
     BookMark.bookState[_bk.uid] = BookState(_bk, siteUid ?? mp["site"]);
-    siteStore[siteUid ?? mp["site"]].bookBaseUrls[_bk.uid] = bookBaseUrl ?? mp["bookBaseUrl"];
-    // Appdata.instance.bks.add(_bk.toMap());
-    // saveData();
+    (siteStore[siteUid ?? mp["site"]])?.bookBaseUrls[_bk.uid] = bookBaseUrl ?? mp["bookBaseUrl"];
+
+    if (save) saveData();
   }
 }
