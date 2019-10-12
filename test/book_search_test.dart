@@ -75,8 +75,8 @@ fn1() async {
 }
 
 main(List<String> args) {
-var replaceAll = "http://www.kenwen.com//a//b//c//d".replaceAll(RegExp( r"""(?:[^:])//""" , "/"));
-print(replaceAll);
+// var replaceAll = "http://www.kenwen.com//a//b//c//d".replaceAll(RegExp( r"""(?:[^:])//""" , "/"));
+// print(replaceAll);
 
   // fn1();
 }

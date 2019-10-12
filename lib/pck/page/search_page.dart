@@ -29,6 +29,23 @@ class __SearchPageState extends State<_SearchPage> {
   String l = "";
   List _r = [];
   var tc = TextEditingController(text: "地球");
+
+  startSearch() async {
+    _r = [];
+    l = "搜索中...";
+    var s = "";
+    setState(() {});
+    for (var item in Bookcase.siteStore.values.toList()) {
+      var a = await item.searchBook(tc.text);
+      if (a is List)
+        for (var i2 in a) _r.add([i2[0], i2[1], item]);
+      else
+        s += a.toString();
+    }
+    l = s;
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListView(children: <Widget>[
@@ -40,20 +57,7 @@ class __SearchPageState extends State<_SearchPage> {
       Container(
           child: Row(children: <Widget>[
         Container(width: 200, child: TextField(controller: tc)),
-        Center(
-            child: FlatButton(
-                child: Text("查找"),
-                onPressed: () async {
-                  _r=[];
-                  for (var item in Bookcase.siteStore.values.toList()) {
-                    var a = await item.searchBook(tc.text);
-                    if (a is List)
-                      for (var i2 in a) _r.add([i2[0], i2[1], item]);
-                    else
-                      l += a.toString();
-                  }
-                  setState(() {});
-                }))
+        Center(child: FlatButton(child: Text("查找"), onPressed: startSearch))
       ])),
       Container(
           width: 400,
@@ -80,7 +84,7 @@ class __SearchPageState extends State<_SearchPage> {
                       IconButton(
                           onPressed: () => Future(Bookcase.addBook(null,
                                   book: Book(0, x[1], "未知", getUid(10)),
-                                  siteUid: (x[2] as Site).siteName,
+                                  siteUid: (x[2] as Site).siteUID,
                                   bookBaseUrl: x[0].toString().startsWith("/") ? x[0].toString().substring(1) : x[0]))
                               .then((x) => BookMark.mainPageRefresher()),
                           icon: Icon(Icons.add_box))

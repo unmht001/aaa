@@ -42,6 +42,7 @@ class Bookcase {
   }
 
   static addBook(Map mp, {Book book, String siteUid, String bookBaseUrl, bool save: true}) {
+    
     var _bk = (mp != null) ? Book.fromMap(mp) : book;
     mp = mp ?? {};
     bookStore[book?.uid ?? (_bk.uid = mp["uid"]) ?? (_bk.uid = getUid(10))] = _bk;

@@ -61,6 +61,9 @@ class Chapter extends AbstractChain<Chapter> {
       this.chapterName = "";
     }
   }
+  String get chapterFullUrl => (book.getSite.siteBaseUrl + book.getSite.bookBaseUrls[book.uid] + chapterUrl)
+      .replaceAll("//", "/")
+      .replaceAll(RegExp(":/"), "://");
 
   loadChapterContent() async {
     if (!isloaded && !isloading) {

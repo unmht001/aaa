@@ -84,7 +84,7 @@ class Book {
   // getContent(Chapter chapter) async => await PageOp.getpagedata(this, chapter);
   BookState get getBookstate => BookMark.bookState[this.uid];
   Site get getSite => Bookcase.siteStore[getBookstate.siteString];
-  String get getMenuUrl => (getSite.siteBaseUrl + "/"+ getSite.bookBaseUrls[uid] +"/"+ getSite.menuUrl).replaceAll(RegExp( "(?!\:)\/\/" ), "/");
+  String get getMenuUrl => (getSite.siteBaseUrl + "/"+ getSite.bookBaseUrls[uid] +"/"+ getSite.menuUrl).replaceAll(RegExp( "//" ), "/").replaceAll(RegExp( ":/" ), "://");
   double get getMenuPv => getBookstate.menupv;
   // setMenuPv()=>getBookstate.menupv
 

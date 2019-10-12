@@ -34,7 +34,9 @@ class StateInit {
       File _bdjfile = File(_pabdjson);
       if (!(await _bdjfile.exists())) await _bdjfile.create(recursive: true);
       if (await _bdjfile.exists()) return _bdjfile;
-    } catch (e) {}
+    } catch (e) {
+      print("getSettingFile fuilare");
+    }
     return null;
   }
 
@@ -48,6 +50,7 @@ class StateInit {
       if (_rds == null) return null;
       return _rds;
     } catch (e) {
+      print("readDataFromJson error");
       return null;
     }
   }
@@ -77,6 +80,7 @@ class StateInit {
       await _bdjfile.writeAsString(d2, mode: FileMode.write);
       return true;
     } catch (e) {
+      print("saveDataToJson error");
       return false;
     }
   }
@@ -138,8 +142,13 @@ update(data) async {
 }
 
 saveData() async {
+  try{
   var s = await StateInit.readDataFromSetting();
-  await StateInit.saveDataToJson(s);
+  await StateInit.saveDataToJson(s);    
+  }catch(e){
+    print("saveData error");
+  }
+
 }
 
 init(EventGun ff) async {
