@@ -1,6 +1,9 @@
+import 'package:aaa/pck/page/get_more_widget.dart';
 import 'package:aaa/pck/support/logS.dart';
 import 'package:draggable_scrollbar/draggable_scrollbar.dart';
 import 'package:flutter/material.dart';
+// import 'package:flutter/src/gestures/recognizer.dart';
+// import 'package:flutter/src/rendering/viewport_offset.dart';
 
 import '../../support.dart';
 import '../../data_type.dart';
@@ -15,7 +18,8 @@ class MenuPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     try {
-      return Scaffold(body: MenuViewList(controller: controller, itemonpress: itemonpress));
+      return Scaffold(
+          body: MenuViewList(key: ValueKey(Appdata.menuKey), controller: controller, itemonpress: itemonpress));
     } catch (e) {
       return Scaffold(body: Container(child: Text(e.toString(), softWrap: true)));
     }
@@ -37,6 +41,10 @@ class _MenuViewListState extends State<MenuViewList> with RefreshProviderState, 
   List get menu => BookMark.currentBook.menu;
   int get selected => (BookMark.currentBook.getBookstate.currentChapter?.index) ?? 0;
   bool built = false;
+
+  bool isLoading = false;
+  bool showmore = false;
+  bool offState = false;
 
   @override
   void initState() {
@@ -67,24 +75,27 @@ class _MenuViewListState extends State<MenuViewList> with RefreshProviderState, 
 
   Widget makeItem(BuildContext context, int index) {
     Chapter chapter = menu[index];
-    return index == null
-        ? FlatButton(onPressed: () {}, child: Text("目录载入中...", softWrap: true))
-        : FlatButton(
-            color: index == selected ? Colors.brown[200] : Colors.white,
-            child: Text(chapter.chapterName.toString(), softWrap: true),
-            onPressed: () {
-              chapter.book.getBookstate.currentChapter = chapter;
-              this.widget.itemonpress(BookMark.currentBook);
-            });
+    return FlatButton(
+        color: index == selected ? Colors.brown[200] : Colors.white,
+        child: Text(chapter.chapterName.toString(), softWrap: true),
+        onPressed: () {
+          chapter.book.getBookstate.currentChapter = chapter;
+          this.widget.itemonpress(BookMark.currentBook);
+        });
+  }
+
+  Future<void> onDraw() async {
+    await BookMark.currentBook.getMenu();
+    refresh();
   }
 
   getL() {
     Widget _r;
-    if (!BookMark.currentBook.getBookstate.isMenuLoaded) {
-      _r = ListView(children: <Widget>[FlatButton(onPressed: () {}, child: Text("目录载入中...", softWrap: true))]);
-
-      BookMark.currentBook.getMenu().then((x) => setState(() {print(333);}));
-    } else
+    if (!BookMark.currentBook.getBookstate.isMenuLoaded || menu.isEmpty)
+      _r = ListView(controller: this.widget.controller, children: <Widget>[GetMore()]);
+      // _r=C1(<Widget>[GetMore()]);
+    // _r = RefreshIndicator(child: ListView(children: <Widget>[GetMore()]), onRefresh: onDraw);
+    else
       _r = ListView.builder(
           reverse: false,
           controller: this.widget.controller,
@@ -119,3 +130,4 @@ class _MenuViewListState extends State<MenuViewList> with RefreshProviderState, 
     // return Container();
   }
 }
+

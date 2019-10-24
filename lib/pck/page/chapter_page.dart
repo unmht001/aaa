@@ -32,6 +32,7 @@ class _ChapterViewListState extends State<ChapterViewList>
   bool get isReadingMode => Appdata.isReadingMode;
   ScrollController controller;
 
+
   @override
   void initState() {
     super.initState();

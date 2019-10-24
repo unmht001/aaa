@@ -59,6 +59,11 @@ class Appdata {
 
   static bool get isAppOnBack => state["isAppOnBack"] ?? (state["isAppOnBack"] = false);
   static set isAppOnBack(bool v) => state["isAppOnBack"] = v;
+
+
+  static  int get menuKey =>data["menuKey"]??(data["menuKey"]= 0);
+  static set menuKey( int v)=>data["menuKey"]=v;  
+
 }
 
 Text stext(String s) =>
