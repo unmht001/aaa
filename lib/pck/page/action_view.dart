@@ -348,8 +348,6 @@ class RefreshIndicatorState extends State<RefreshIndicator> with TickerProviderS
   }
 }
 
-
-
 /// Build the Scroll Thumb and label using the current configuration
 typedef Widget ScrollThumbBuilder(
   Color backgroundColor,
@@ -514,32 +512,27 @@ class DraggableScrollbar extends StatefulWidget {
       BoxConstraints labelConstraints,
     }) {
       final scrollThumb = CustomPaint(
-        key: scrollThumbKey,
-        foregroundPainter: ArrowCustomPainter(Colors.grey),
-        child: Material(
-          elevation: 4.0,
-          child: Container(
-            constraints: BoxConstraints.tight(Size(width, height)),
-          ),
-          color: backgroundColor,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(height),
-            bottomLeft: Radius.circular(height),
-            topRight: Radius.circular(4.0),
-            bottomRight: Radius.circular(4.0),
-          ),
-        ),
-      );
+          key: scrollThumbKey,
+          foregroundPainter: ArrowCustomPainter(Colors.grey),
+          child: Material(
+              elevation: 4.0,
+              child: Container(constraints: BoxConstraints.tight(Size(width, height))),
+              color: backgroundColor,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(height),
+                bottomLeft: Radius.circular(height),
+                topRight: Radius.circular(4.0),
+                bottomRight: Radius.circular(4.0),
+              )));
 
       return buildScrollThumbAndLabel(
-        scrollThumb: scrollThumb,
-        backgroundColor: backgroundColor,
-        thumbAnimation: thumbAnimation,
-        labelAnimation: labelAnimation,
-        labelText: labelText,
-        labelConstraints: labelConstraints,
-        alwaysVisibleScrollThumb: alwaysVisibleScrollThumb,
-      );
+          scrollThumb: scrollThumb,
+          backgroundColor: backgroundColor,
+          thumbAnimation: thumbAnimation,
+          labelAnimation: labelAnimation,
+          labelText: labelText,
+          labelConstraints: labelConstraints,
+          alwaysVisibleScrollThumb: alwaysVisibleScrollThumb);
     };
   }
 
@@ -553,18 +546,11 @@ class DraggableScrollbar extends StatefulWidget {
       BoxConstraints labelConstraints,
     }) {
       final scrollThumb = ClipPath(
-        child: Container(
-          height: height,
-          width: 20.0,
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: BorderRadius.all(
-              Radius.circular(12.0),
-            ),
-          ),
-        ),
-        clipper: ArrowClipper(),
-      );
+          child: Container(
+              height: height,
+              width: 20.0,
+              decoration: BoxDecoration(color: backgroundColor, borderRadius: BorderRadius.all(Radius.circular(12.0)))),
+          clipper: ArrowClipper());
 
       return buildScrollThumbAndLabel(
         scrollThumb: scrollThumb,
@@ -605,7 +591,7 @@ class DraggableScrollbar extends StatefulWidget {
         labelAnimation: labelAnimation,
         labelText: labelText,
         labelConstraints: labelConstraints,
-        alwaysVisibleScrollThumb: alwaysVisibleScrollThumb,
+        alwaysVisibleScrollThumb: alwaysVisibleScrollThumb
       );
     };
   }
@@ -619,32 +605,26 @@ class ScrollLabel extends StatelessWidget {
   final BoxConstraints constraints;
   static const BoxConstraints _defaultConstraints = BoxConstraints.tightFor(width: 72.0, height: 28.0);
 
-  const ScrollLabel({
-    Key key,
-    @required this.child,
-    @required this.animation,
-    @required this.backgroundColor,
-    this.constraints = _defaultConstraints,
-  }) : super(key: key);
+  const ScrollLabel(
+      {Key key,
+      @required this.child,
+      @required this.animation,
+      @required this.backgroundColor,
+      this.constraints = _defaultConstraints})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return FadeTransition(
-      opacity: animation,
-      child: Container(
-        margin: EdgeInsets.only(right: 12.0),
-        child: Material(
-          elevation: 4.0,
-          color: backgroundColor,
-          borderRadius: BorderRadius.all(Radius.circular(16.0)),
-          child: Container(
-            constraints: constraints ?? _defaultConstraints,
-            alignment: Alignment.center,
-            child: child,
-          ),
-        ),
-      ),
-    );
+        opacity: animation,
+        child: Container(
+            margin: EdgeInsets.only(right: 12.0),
+            child: Material(
+                elevation: 4.0,
+                color: backgroundColor,
+                borderRadius: BorderRadius.all(Radius.circular(16.0)),
+                child: Container(
+                    constraints: constraints ?? _defaultConstraints, alignment: Alignment.center, child: child))));
   }
 }
 
@@ -695,11 +675,8 @@ class _DraggableScrollbarState extends State<DraggableScrollbar> with TickerProv
   }
 
   double get barMaxScrollExtent => context.size.height - widget.heightScrollThumb;
-
   double get barMinScrollExtent => 0.0;
-
   double get viewMaxScrollExtent => widget.controller.position.maxScrollExtent;
-
   double get viewMinScrollExtent => widget.controller.position.minScrollExtent;
 
   @override
@@ -715,36 +692,27 @@ class _DraggableScrollbarState extends State<DraggableScrollbar> with TickerProv
       //print("LayoutBuilder constraints=$constraints");
 
       return NotificationListener<ScrollNotification>(
-        onNotification: (ScrollNotification notification) => changePosition(notification),
-        child: Stack(
-          children: <Widget>[
+          onNotification: (ScrollNotification notification) => changePosition(notification),
+          child: Stack(children: <Widget>[
             RepaintBoundary(
               child: widget.child,
             ),
             RepaintBoundary(
                 child: GestureDetector(
-              onVerticalDragStart: _onVerticalDragStart,
-              onVerticalDragUpdate: _onVerticalDragUpdate,
-              onVerticalDragEnd: _onVerticalDragEnd,
-              child: Container(
-                alignment: Alignment.topRight,
-                margin: EdgeInsets.only(top: _barOffset),
-                padding: widget.padding,
-                child: widget.scrollThumbBuilder(
-                  widget.backgroundColor,
-                  _thumbAnimation,
-                  _labelAnimation,
-                  widget.heightScrollThumb,
-                  labelText: labelText,
-                  labelConstraints: widget.labelConstraints,
-                ),
-              ),
-            )),
-          ],
-        ),
-      );
+                    onVerticalDragStart: _onVerticalDragStart,
+                    onVerticalDragUpdate: _onVerticalDragUpdate,
+                    onVerticalDragEnd: _onVerticalDragEnd,
+                    child: Container(
+                        alignment: Alignment.topRight,
+                        margin: EdgeInsets.only(top: _barOffset),
+                        padding: widget.padding,
+                        child: widget.scrollThumbBuilder(
+                            widget.backgroundColor, _thumbAnimation, _labelAnimation, widget.heightScrollThumb,
+                            labelText: labelText, labelConstraints: widget.labelConstraints))))
+          ]));
     });
   }
+
   changePosition(ScrollNotification notification) {
     if (_isDragInProcess) {
       return;
@@ -932,28 +900,19 @@ class SlideFadeTransition extends StatelessWidget {
   final Animation<double> animation;
   final Widget child;
 
-  const SlideFadeTransition({
-    Key key,
-    @required this.animation,
-    @required this.child,
-  }) : super(key: key);
+  const SlideFadeTransition({Key key, @required this.animation, @required this.child}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: animation,
-      builder: (context, child) => animation.value == 0.0 ? Container() : child,
-      child: SlideTransition(
-        position: Tween(
-          begin: Offset(0.3, 0.0),
-          end: Offset(0.0, 0.0),
-        ).animate(animation),
-        child: FadeTransition(
-          opacity: animation,
-          child: child,
-        ),
-      ),
-    );
+        animation: animation,
+        builder: (context, child) => animation.value == 0.0 ? Container() : child,
+        child: SlideTransition(
+            position: Tween(
+              begin: Offset(0.3, 0.0),
+              end: Offset(0.0, 0.0),
+            ).animate(animation),
+            child: FadeTransition(opacity: animation, child: child)));
   }
 }
 // class C1 extends DraggableScrollbar implements RefreshIndicator{

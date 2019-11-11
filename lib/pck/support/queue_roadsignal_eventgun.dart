@@ -1,6 +1,5 @@
 import 'dart:async';
 
-
 class TestQueue<T> {
   TestQueue([this.max = 0]);
   List<T> _queueData = [];
@@ -46,20 +45,33 @@ class TestQueue<T> {
   }
 }
 
+enum RoadColor { GREEN, RED }
+
 class RoadSignal {
   List<Completer> _waitList = [];
+  List<Completer> _waitRedList = [];
   bool _green = false;
   bool get isGreen => _green;
+  bool get isRed => !_green;
   flicker() {
     while (_waitList.isNotEmpty) _waitList.removeAt(0).complete();
   }
 
+  flickerRed() {
+    while (_waitRedList.isNotEmpty) _waitRedList.removeAt(0).complete();
+  }
+  RoadColor get state=>isGreen?RoadColor.GREEN:RoadColor.RED;
   goGreen() {
     _green = true;
     flicker();
+    return state;
   }
 
-  goRed() => _green = false;
+  goRed() {
+    _green = false;
+    flickerRed();
+    return state;
+  }
 
   waitGreen() async {
     if (!isGreen) {
@@ -68,8 +80,15 @@ class RoadSignal {
       await c.future;
     }
   }
-}
 
+  waitRed() async {
+    if (isGreen) {
+      Completer c = new Completer();
+      _waitRedList.add(c);
+      await c.future;
+    }
+  }
+}
 
 class EventGun {
   bool isFired = false;
@@ -100,7 +119,6 @@ class AppException implements Exception {
   const AppException([this.message]);
   String toString() => message ?? 'AppException';
 }
-
 
 class MyListener {
   dynamic _v = "初始";

@@ -67,4 +67,12 @@ class BookMark {
 
   static get mainPageRefresher => fn["mainPageRefresher"] ?? (fn["mainPageRefresher"] = ([x]) {});
   static set mainPageRefresher(Function v) => fn["mainPageRefresher"] = v;
+
+
+  static RoadSignal get menuRs =>state["menuRs"]??(state["menuRs"]= new RoadSignal());
+  static  set menuRs( RoadSignal v)=>state["menuRs"]=v;
+  static RoadSignal get chapterRs =>state["chapterRs"]??(state["chapterRs"]= new RoadSignal());
+  static  set chapterRs( RoadSignal v)=>state["chapterRs"]=v;
+
+
 }

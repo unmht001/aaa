@@ -1,6 +1,5 @@
-// import 'dart:async';
+import 'package:aaa/support.dart';
 
-import 'package:draggable_scrollbar/draggable_scrollbar.dart';
 import 'package:flutter/material.dart';
 import '../../data_type.dart';
 import '../../support.dart' show Reader, RefreshProviderSTF, RefreshProviderState, ReaderState, log;
@@ -31,11 +30,12 @@ class _ChapterViewListState extends State<ChapterViewList>
   bool get wantKeepAlive => true;
   bool get isReadingMode => Appdata.isReadingMode;
   ScrollController controller;
-
-
+  var s = new RoadSignal();
+  // DateTime t1;
   @override
   void initState() {
     super.initState();
+    rs = BookMark.chapterRs;
     this.controller = ScrollController(initialScrollOffset: 0.0, keepScrollOffset: true);
     Appdata.instance.chapterPageController = controller;
     BookMark.chapterPageRefresher = ([x]) {
@@ -80,7 +80,7 @@ class _ChapterViewListState extends State<ChapterViewList>
             Appdata.height * (sss.genFather * -1 / sss.first.genChildren - 0.5);
         if (p != null && p > 1.5 && p < 2.5 && s >= 0)
           controller.position.animateTo(s,
-              duration: Duration(milliseconds: (sss.height == 0 ? 100 : sss.height).toInt() * 5), curve: Curves.ease);
+              duration: Duration(milliseconds: 500), curve: Curves.ease);
       }
     } else {
       print("pagemove: Appdata.isAppOnBack: ${Appdata.isAppOnBack}");
@@ -89,11 +89,11 @@ class _ChapterViewListState extends State<ChapterViewList>
 
   sectionSheet2Card(SectionSheet sss) {
     return Container(
-        key: sss.sgk,
-        color: book.getBookstate.isreading && sss.isHighlight ? Colors.greenAccent[100] : sss.cl,
+        // key: sss.sgk,
+        color: book.getBookstate.isreading && sss.isHighlight ? Colors.greenAccent[100] : sss?.cl,
         padding: EdgeInsets.all(5),
         child: GestureDetector(
-            child: Text(sss.text, softWrap: true, style: TextStyle(fontWeight: FontWeight.w500, fontSize: 20.0)),
+            child: Text((sss?.text)??"", softWrap: true, style: TextStyle(fontWeight: FontWeight.w500, fontSize: 20.0)),
             onTap: () => smartReading(sss)));
   }
 
@@ -102,7 +102,7 @@ class _ChapterViewListState extends State<ChapterViewList>
     super.build(context);
     log("build ChapterPage");
     Widget _r;
-
+    checkState();
     rs.goRed();
     try {
       if (this.widget.chapter == null || this.widget.book == null)
@@ -111,22 +111,30 @@ class _ChapterViewListState extends State<ChapterViewList>
         _r = GestureDetector(
             onHorizontalDragEnd: (detail) => refresh(changeChapter(detail.primaryVelocity)),
             child: Container(
-                child: DraggableScrollbar(
+                child: ViewTest(
+                    onLoading: () async {
+                      // DateTime t2=DateTime.now();
+                      
+                      print("page onload action......");
+                      this.widget.chapter.isloaded = false;
+                      stopReading();
+                      if (this.widget.chapter.isloading) {
+                        await this.widget.chapter.waitLoadOver();
+                        refresh();
+                        startReading();
+                      } else {
+                        await this.widget.chapter.loadChapterContent();
+                        refresh();
+                        startReading();
+                      }
+                      print("page onLoad action over");
+                      checkState();
+                      return true;
+                    },
                     controller: controller,
-                    heightScrollThumb: 50,
-                    backgroundColor: Colors.blue,
-                    scrollThumbBuilder: (Color backgroundColor, Animation<double> thumbAnimation,
-                            Animation<double> labelAnimation, double height,
-                            {Text labelText, BoxConstraints labelConstraints}) =>
-                        FadeTransition(
-                            opacity: thumbAnimation,
-                            child: Container(height: height, width: 20.0, color: backgroundColor)),
-                    child: ListView.builder(
-                        reverse: false,
-                        controller: controller,
-                        itemCount: this.widget.chapter.contentStart.genChildren + 1,
-                        itemBuilder: (context, index) =>
-                            sectionSheet2Card(this.widget.chapter.contentStart.getGen(index))))));
+                    itemCount: this.widget.chapter.contentStart.genChildren + 1,
+                    itemBuilder: (context, index) =>
+                        sectionSheet2Card(this.widget.chapter.contentStart.getGen(index)))));
     } catch (e) {
       _r = Container(child: Text(e.toString(), softWrap: true));
       log(e);

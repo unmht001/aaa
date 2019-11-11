@@ -62,8 +62,6 @@ mixin HomePageMixin on State<MyHomePage> {
     return f;
   }
 
-  
-
   refresh() {
     setState(() {});
   }
@@ -151,7 +149,7 @@ class _MyHomePageState extends State<MyHomePage>
     this._chapterCtr.dispose();
     WidgetsBinding.instance.removeObserver(this);
     Appdata.instance.tts.stop();
-    BookMark.mainPageRefresher=([x]){};
+    BookMark.mainPageRefresher = ([x]) {};
     super.dispose();
   }
 
@@ -162,6 +160,17 @@ class _MyHomePageState extends State<MyHomePage>
     this._pctler = PageController(initialPage: 0);
     Appdata.instance.pageController = _pctler;
     this._menuCtr = ScrollController(initialScrollOffset: 1.0, keepScrollOffset: true);
-    BookMark.mainPageRefresher=refresh;
+    BookMark.mainPageRefresher = refresh;
+    this._pctler.addListener(() {
+      if (this._pctler.page == 1) {
+        BookMark.menuRs.goGreen();
+        BookMark.menuPageNeedToRefresh = true;
+        BookMark.chapterRs.goRed();
+      } else if (this._pctler.page == 2) {
+        BookMark.chapterRs.goGreen();
+        BookMark.chapterPageNeedToRefresh = true;
+        BookMark.menuRs.goRed();
+      }
+    });
   }
 }

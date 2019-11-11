@@ -25,8 +25,13 @@ class Chapter extends AbstractChain<Chapter> {
   Book book;
 
   int index;
-  bool isloaded = false;
-  bool isloading = false;
+  bool isloaded ;
+  RoadSignal s = new RoadSignal();
+
+  //isloading true=red, false=greed
+  bool get isloading => s.isRed;  
+  set isloading(bool value) => (value ? s.goRed() : s.goGreen())==RoadColor.RED;
+
   String chapterUid;
   bool localSaved = false;
 
@@ -49,8 +54,13 @@ class Chapter extends AbstractChain<Chapter> {
   fromMap(mp) {}
 
   List<Chapter> get menu => book?.menu;
-  Chapter([this.chapterUrl = "", this.chapterName = "", this.book, this.chapterUid]);
+  Chapter([this.chapterUrl = "", this.chapterName = "", this.book, this.chapterUid]) {
+    isloading = false;
+    isloaded = false;
+  }
   Chapter.fromList(List lst) {
+    isloaded=false;
+    isloaded=false;
     if (lst != null) {
       this.chapterUrl = lst[0][0];
       this.chapterName = lst[0][1];
@@ -64,6 +74,12 @@ class Chapter extends AbstractChain<Chapter> {
   String get chapterFullUrl => (book.getSite.siteBaseUrl + book.getSite.bookBaseUrls[book.uid] + chapterUrl)
       .replaceAll("//", "/")
       .replaceAll(RegExp(":/"), "://");
+
+  waitLoadOver() async {
+    if (isloading) {
+      await s.waitRed();
+    }
+  }
 
   loadChapterContent() async {
     if (!isloaded && !isloading) {

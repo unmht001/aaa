@@ -5,10 +5,11 @@ class SectionSheet extends AbstractChain<SectionSheet> {
   static Color hColor = Colors.blueAccent[100]; //高亮颜色
   static Color lColor = Colors.amber[50]; //平常颜色
 
-  GlobalKey sgk = new GlobalKey();
+  
+  // GlobalKey sgk = new GlobalKey();
 
-  double get height => (sgk?.currentContext?.size?.height) ?? 0.0;
-  double get sumheight => height + (father == null ? 0.0 : father.sumheight);
+  // double get height => (sgk?.currentContext?.size?.height) ?? 0.0;
+  // double get sumheight => height + (father == null ? 0.0 : father.sumheight);
 
   String text;
   bool isHighlight = false;
